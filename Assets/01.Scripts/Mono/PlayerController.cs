@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class PlayerController : MonoBehaviour
 {
@@ -7,8 +9,8 @@ public class PlayerController : MonoBehaviour
     Camera _cam;
 
     [SerializeField] private float _moveSpeed = 2f;
-    
-    private Vector3 _relativeMoveVector = Vector3.zero;
+
+    private Vector2 _moveInput;
 
     private void Awake()
     {
@@ -35,22 +37,27 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        transform.position += _relativeMoveVector * _moveSpeed * Time.deltaTime;
+        Move();
+    }
+    private void Move()
+    {
+        Vector3 camForward = _cam.transform.forward;
+        camForward.y = 0f;
+        camForward.Normalize();
+
+        Vector3 camRight = _cam.transform.right;
+        camRight.y = 0f;
+        camRight.Normalize();
+
+        Vector3 moveDir = camRight * _moveInput.x + camForward * _moveInput.y;
+
+        moveDir.Normalize();
+
+        transform.position += moveDir * _moveSpeed * Time.deltaTime;
     }
 
     private void OnMove(InputAction.CallbackContext ctx)
     {
-        _relativeMoveVector = CalculateRelativeMoveVector(ctx.ReadValue<Vector2>());
-    }
-
-    private Vector3 CalculateRelativeMoveVector(Vector2 rawInputVector)
-    {
-        rawInputVector.Normalize();
-
-        Vector3 relativeVector = _cam.transform.right * rawInputVector.x + _cam.transform.forward * rawInputVector.y;
-        relativeVector.y = 0;
-        relativeVector.Normalize();
-
-        return relativeVector;
+        _moveInput = ctx.ReadValue<Vector2>();
     }
 }
