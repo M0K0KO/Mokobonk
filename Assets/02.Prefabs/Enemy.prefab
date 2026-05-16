@@ -103,6 +103,7 @@ MonoBehaviour:
   maxHealth: 10
   moveSpeed: 2
   rotateSpeed: 10
+  contactDamage: 0
 --- !u!54 &-5173158443516523874
 Rigidbody:
   m_ObjectHideFlags: 0

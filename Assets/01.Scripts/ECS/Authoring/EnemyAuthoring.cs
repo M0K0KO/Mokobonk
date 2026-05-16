@@ -9,6 +9,7 @@ public class EnemyAuthoring : MonoBehaviour
     [SerializeField] private float maxHealth;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
+    [SerializeField] private float contactDamage;
 
     class Baker : Baker<EnemyAuthoring>
     {
@@ -31,6 +32,7 @@ public class EnemyAuthoring : MonoBehaviour
                 }
             );
             AddComponent(entity, new PhysicsCollider { Value = collider });
+            AddComponent(entity, new ContactDamage { Value = authoring.contactDamage });
         }
     }
 }
