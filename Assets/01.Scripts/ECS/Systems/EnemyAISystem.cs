@@ -1,6 +1,7 @@
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
 using Unity.Transforms;
 
 [BurstCompile]
@@ -22,7 +23,7 @@ partial struct EnemyAISystem : ISystem
         new MoveEnemyJob
         {
             PlayerPos = playerPos,
-            DeltaTime = dt
+            DeltaTime = dt,
         }.ScheduleParallel();
     }
 
@@ -40,13 +41,24 @@ public partial struct MoveEnemyJob : IJobEntity
 {
     public float3 PlayerPos;
     public float DeltaTime;
-
-    private void Execute(ref LocalTransform transform, in MoveSpeed moveSpeed)
+    private void Execute(ref LocalTransform transform, in MoveSpeed moveSpeed, in RotateSpeed rotateSpeed, ref PhysicsVelocity velocity, in EnemyTag _)
     {
         float3 toPlayer = PlayerPos - transform.Position;
         toPlayer.y = 0;
+
         float3 dir = math.normalizesafe(toPlayer);
 
-        transform.Position += dir * moveSpeed.Speed * DeltaTime;
+        velocity.Linear = dir * moveSpeed.Speed;
+
+        if (math.lengthsq(dir) > math.EPSILON)
+        {
+            quaternion targetRot = quaternion.LookRotationSafe(dir, math.up());
+
+            transform.Rotation = math.slerp(
+                transform.Rotation,
+                targetRot,
+                math.saturate(DeltaTime * rotateSpeed.Speed)
+            );
+        }
     }
 }
