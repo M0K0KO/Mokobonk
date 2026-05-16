@@ -18,9 +18,13 @@ partial struct DespawnSystem : ISystem
         foreach (var (lifetime, entity) in SystemAPI.Query<RefRO<Lifetime>>().WithEntityAccess())
         {
             if (lifetime.ValueRO.Remaining <= 0f)
-            {
                 ecb.DestroyEntity(entity);
-            }
+        }
+
+        foreach (var (health, entity) in SystemAPI.Query<RefRO<Health>>().WithEntityAccess())
+        {
+            if (health.ValueRO.Current <= 0f)
+                ecb.DestroyEntity(entity);
         }
     }
 

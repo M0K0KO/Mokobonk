@@ -28,7 +28,7 @@ public class ProjectileAuthoring : MonoBehaviour
                 },
                 new Unity.Physics.Material
                 {
-                    CollisionResponse = Unity.Physics.CollisionResponsePolicy.RaiseTriggerEvents,
+                    CollisionResponse = CollisionResponsePolicy.RaiseTriggerEvents
                 }
             );
 
