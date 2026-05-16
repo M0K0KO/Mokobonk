@@ -27,8 +27,12 @@ public class EnemyAuthoring : MonoBehaviour
                 new Unity.Physics.CollisionFilter
                 {
                     BelongsTo = CollisionLayers.Enemy,
-                    CollidesWith = CollisionLayers.Enemy | CollisionLayers.Projectile | CollisionLayers.Player,
+                    CollidesWith = CollisionLayers.Enemy | CollisionLayers.Projectile | CollisionLayers.Core,
                     GroupIndex = 0
+                },
+                new Unity.Physics.Material
+                {
+                    CollisionResponse = CollisionResponsePolicy.CollideRaiseCollisionEvents
                 }
             );
             AddComponent(entity, new PhysicsCollider { Value = collider });
