@@ -13,9 +13,19 @@ partial struct DespawnSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+        var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+            .CreateCommandBuffer(state.WorldUnmanaged);
+        float dt = SystemAPI.Time.DeltaTime;
 
-        foreach (var (health, entity) in SystemAPI.Query<RefRO<Health>>().WithEntityAccess())
+        foreach (var (lt, entity) in SystemAPI.Query<RefRW<Lifetime>>().WithEntityAccess())
+        {
+            lt.ValueRW.Remaining -= dt;
+            if (lt.ValueRO.Remaining <= 0f)
+                ecb.DestroyEntity(entity);
+        }
+
+
+        foreach (var (health, entity) in SystemAPI.Query<RefRO<Health>>().WithAll<EnemyTag>().WithEntityAccess())
         {
             if (health.ValueRO.Current <= 0f)
                 ecb.DestroyEntity(entity);

@@ -8,6 +8,7 @@ public class InputManager : MonoBehaviour
     private PlayerInput _playerInput;
 
     public Vector2 MoveInput { get; private set; }
+    public bool BuildModeChangeInput { get; private set; }
 
     private void Awake()
     {
@@ -23,6 +24,8 @@ public class InputManager : MonoBehaviour
 
         _playerInput.Gameplay.Move.performed += OnMove;
         _playerInput.Gameplay.Move.canceled += OnMove;
+
+        _playerInput.Gameplay.BuildModeChange.performed += OnBuildModeChange;
     }
 
     private void OnDisable()
@@ -30,10 +33,30 @@ public class InputManager : MonoBehaviour
         _playerInput.Gameplay.Move.performed -= OnMove;
         _playerInput.Gameplay.Move.canceled -= OnMove;
 
+        _playerInput.Gameplay.BuildModeChange.performed -= OnBuildModeChange;
+
         _playerInput.Disable();
     }
     private void OnMove(InputAction.CallbackContext ctx)
     {
         MoveInput = ctx.ReadValue<Vector2>();
+    }
+
+    private void OnBuildModeChange(InputAction.CallbackContext ctx)
+    {
+        BuildModeChangeInput = true;
+    }
+
+    public bool TryConsumeBuildModeChangeInput()
+    {
+        if (BuildModeChangeInput)
+        {
+            BuildModeChangeInput = false;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

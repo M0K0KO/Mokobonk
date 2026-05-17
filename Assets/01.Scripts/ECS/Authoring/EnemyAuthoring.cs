@@ -35,6 +35,7 @@ public class EnemyAuthoring : MonoBehaviour
                     CollisionResponse = CollisionResponsePolicy.CollideRaiseCollisionEvents
                 }
             );
+            AddBlobAsset(ref collider, out _);
             AddComponent(entity, new PhysicsCollider { Value = collider });
             AddComponent(entity, new ContactDamage { Value = authoring.contactDamage });
         }

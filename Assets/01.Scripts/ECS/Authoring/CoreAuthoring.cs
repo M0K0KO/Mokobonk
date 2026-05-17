@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using UnityEngine;
+using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class CoreAuthoring : MonoBehaviour
 {
@@ -39,6 +40,7 @@ public class CoreAuthoring : MonoBehaviour
                     CollisionResponse = Unity.Physics.CollisionResponsePolicy.RaiseTriggerEvents
                 }
             );
+            AddBlobAsset(ref collider, out _);
             AddComponent(entity, new PhysicsCollider { Value = collider });
             AddSharedComponent(entity, new PhysicsWorldIndex { Value = 0 });
         }
