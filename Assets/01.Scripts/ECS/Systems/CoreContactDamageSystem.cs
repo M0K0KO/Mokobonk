@@ -24,6 +24,7 @@ partial struct CoreContactDamageSystem : ISystem
 
         var coreTagLookup = SystemAPI.GetComponentLookup<CoreTag>(true);
         var enemyTagLookup = SystemAPI.GetComponentLookup<EnemyTag>(true);
+        var healthLookup = SystemAPI.GetComponentLookup<Health>(false);
         var contactDamageLookup = SystemAPI.GetComponentLookup<ContactDamage>(true);
 
         var queue = SystemAPI.GetSingleton<CoreDamageQueueSingleton>().Queue;
@@ -33,6 +34,7 @@ partial struct CoreContactDamageSystem : ISystem
         {
             CoreTag = coreTagLookup,
             EnemyTag = enemyTagLookup,
+            Health = healthLookup,
             ContactDamage = contactDamageLookup,
             DamageQueue = queue.AsParallelWriter(),
             ECB = ecb.AsParallelWriter()
@@ -72,6 +74,7 @@ public struct CoreContactJob : ITriggerEventsJob
 {
     [ReadOnly] public ComponentLookup<CoreTag> CoreTag;
     [ReadOnly] public ComponentLookup<EnemyTag> EnemyTag;
+    public ComponentLookup<Health> Health;
     [ReadOnly] public ComponentLookup<ContactDamage> ContactDamage;
     public NativeQueue<float>.ParallelWriter DamageQueue;
     public EntityCommandBuffer.ParallelWriter ECB;
@@ -92,6 +95,6 @@ public struct CoreContactJob : ITriggerEventsJob
         float dmg = ContactDamage[enemy].Value;
         DamageQueue.Enqueue(dmg);
 
-        ECB.DestroyEntity(enemy.Index, enemy);
+        Health[enemy] = new Health { Current = -1f };
     }
 }

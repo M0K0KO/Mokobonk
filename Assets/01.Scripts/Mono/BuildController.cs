@@ -108,6 +108,17 @@ public class BuildController : MonoBehaviour
                            .GetSingleton<GridOccupancySingleton>();
         if (occupancy.Map.ContainsKey(cell)) return;
 
+        var resQuery = _entityManager.CreateEntityQuery(typeof(ResourceSingleton));
+        var res = resQuery.GetSingletonRW<ResourceSingleton>();
+
+        var turretCfg = _entityManager.CreateEntityQuery(typeof(TurretSpawnConfigSingleton))
+                            .GetSingleton<TurretSpawnConfigSingleton>();
+
+        int cost = turretCfg.Cost;
+        if (res.ValueRO.Gold < cost) return;
+
+        res.ValueRW.Gold -= cost;
+
         var queueSingleton = _entityManager.CreateEntityQuery(typeof(SpawnTurretQueueSingleton))
                                 .GetSingleton<SpawnTurretQueueSingleton>();
 

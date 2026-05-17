@@ -24,11 +24,29 @@ partial struct DespawnSystem : ISystem
                 ecb.DestroyEntity(entity);
         }
 
-
+        int killedThisFrame = 0;
         foreach (var (health, entity) in SystemAPI.Query<RefRO<Health>>().WithAll<EnemyTag>().WithEntityAccess())
         {
             if (health.ValueRO.Current <= 0f)
+            {
                 ecb.DestroyEntity(entity);
+                killedThisFrame++;
+            }
+        }
+
+        if (killedThisFrame >0)
+        {
+            if (SystemAPI.HasSingleton<WaveStateSingleton>())
+            {
+                var waveRW = SystemAPI.GetSingletonRW<WaveStateSingleton>();
+                waveRW.ValueRW.AliveEnemies -= killedThisFrame;
+            }
+
+            if (SystemAPI.HasSingleton<ResourceSingleton>())
+            {
+                var resRW = SystemAPI.GetSingletonRW<ResourceSingleton>();
+                resRW.ValueRW.Gold += resRW.ValueRO.EnemyKillReward * killedThisFrame;
+            }
         }
     }
 

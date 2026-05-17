@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 10
-  moveSpeed: 5
+  moveSpeed: 8
   rotateSpeed: 10
   contactDamage: 4
 --- !u!54 &-5173158443516523874

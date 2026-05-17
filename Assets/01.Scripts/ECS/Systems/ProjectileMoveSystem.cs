@@ -15,7 +15,7 @@ public partial struct ProjectileMoveSystem : ISystem
     }
 }
 
-//[BurstCompile]
+[BurstCompile]
 public partial struct ProjectileMoveJob : IJobEntity
 {
     public float DeltaTime;
@@ -23,7 +23,5 @@ public partial struct ProjectileMoveJob : IJobEntity
     void Execute(ref LocalTransform transform, in ProjectileVelocity vel, in ProjectileTag _)
     {
         transform.Position += DeltaTime * vel.Speed * vel.Direction;
-
-        UnityEngine.Debug.Log($"Projectile pos: {transform.Position}, vel.Speed: {vel.Speed}");
     }
 }

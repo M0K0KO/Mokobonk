@@ -24,9 +24,12 @@ partial struct EnemySpawnSystem : ISystem
         var spawnRW = SystemAPI.GetSingletonRW<EnemySpawnConfigSingleton>();
         ref var cfg = ref spawnRW.ValueRW;
 
+        if (cfg.RemainingToSpawn <= 0) return;
+
         float now = (float)SystemAPI.Time.ElapsedTime;
         if (now < cfg.NextSpawnTime) return;
         cfg.NextSpawnTime = now + cfg.SpawnInterval;
+        cfg.RemainingToSpawn--;
 
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
 

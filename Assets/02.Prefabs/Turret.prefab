@@ -46,10 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44816d08bd9884b97c9aa2c22b210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Range: 8
-  FireRate: 3
-  Damage: 10
-  ProjectileSpeed: 30
+  Range: 12
+  FireRate: 10
+  Damage: 6
+  ProjectileSpeed: 50
   ProjectilePrefab: {fileID: 9165703474325065379, guid: 7c9af2d13e640934881e5fc23b09f36b, type: 3}
 --- !u!23 &1671903107189027261
 MeshRenderer:
