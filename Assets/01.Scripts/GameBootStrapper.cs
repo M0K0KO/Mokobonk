@@ -18,6 +18,8 @@ public class GameBootStrapper : MonoBehaviour
     private NativeArray<float3> _flowDirections;
     private NativeArray<ushort> _flowCosts;
 
+    private NativeParallelMultiHashMap<int2, EnemySpatialEntry> _spatialMap;
+
     private void Awake()
     {
         _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
@@ -68,6 +70,16 @@ public class GameBootStrapper : MonoBehaviour
         });
 
         _entityManager.CreateSingleton(new FlowFieldDirtyFlag { Value = true });
+
+
+
+        _spatialMap = new NativeParallelMultiHashMap<int2, EnemySpatialEntry>(1024, Allocator.Persistent);
+        _entityManager.CreateSingleton(new SpatialIndexSingleton
+        {
+            Map = _spatialMap,
+            CellSize = 4f,
+            Origin = float3.zero
+        });
     }
 
     private void OnDestroy()
@@ -88,5 +100,6 @@ public class GameBootStrapper : MonoBehaviour
         if (_occupancyMap.IsCreated) _occupancyMap.Dispose();
         if (_flowDirections.IsCreated) _flowDirections.Dispose();
         if (_flowCosts.IsCreated) _flowCosts.Dispose();
+        if (_spatialMap.IsCreated) _spatialMap.Dispose();
     }
 }
