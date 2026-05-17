@@ -51,6 +51,7 @@ public class TurretAuthoring : MonoBehaviour
                     CollisionResponse = CollisionResponsePolicy.Collide,
                 }
             );
+            AddBlobAsset(ref collider, out _);
             AddComponent(entity, new PhysicsCollider { Value = collider });
             AddComponent(entity, new PhysicsVelocity());
             AddComponent(entity, PhysicsMass.CreateKinematic(MassProperties.UnitSphere));

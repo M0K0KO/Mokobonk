@@ -39,6 +39,7 @@ public class ProjectileAuthoring : MonoBehaviour
                     CollisionResponse = CollisionResponsePolicy.RaiseTriggerEvents
                 }
             );
+            AddBlobAsset(ref collider, out _);
             AddComponent(entity, new PhysicsCollider { Value = collider });
 
             AddComponent(entity, new PhysicsVelocity());
