@@ -59,5 +59,7 @@ public partial struct ChaseCoreJob : IJobEntity
                 math.saturate(DeltaTime * rotateSpeed.Speed)
             );
         }
+
+        transform.Position = new float3(transform.Position.x, 0.55f, transform.Position.z);
     }
 }

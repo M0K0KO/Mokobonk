@@ -8,7 +8,8 @@ public class InputManager : MonoBehaviour
     private PlayerInput _playerInput;
 
     public Vector2 MoveInput { get; private set; }
-    public bool BuildModeChangeInput { get; private set; }
+    public bool TurretBuildModeInput { get; private set; }
+    public bool WallBuildModeInput { get; private set; }
 
     private void Awake()
     {
@@ -25,7 +26,8 @@ public class InputManager : MonoBehaviour
         _playerInput.Gameplay.Move.performed += OnMove;
         _playerInput.Gameplay.Move.canceled += OnMove;
 
-        _playerInput.Gameplay.BuildModeChange.performed += OnBuildModeChange;
+        _playerInput.Gameplay.TurretBuildMode.performed += OnTurretBuildModeChangeInput;
+        _playerInput.Gameplay.WallBuildMode.performed += OnWallBuildModeChangeInput;
     }
 
     private void OnDisable()
@@ -33,7 +35,8 @@ public class InputManager : MonoBehaviour
         _playerInput.Gameplay.Move.performed -= OnMove;
         _playerInput.Gameplay.Move.canceled -= OnMove;
 
-        _playerInput.Gameplay.BuildModeChange.performed -= OnBuildModeChange;
+        _playerInput.Gameplay.TurretBuildMode.performed -= OnTurretBuildModeChangeInput;
+        _playerInput.Gameplay.WallBuildMode.performed -= OnWallBuildModeChangeInput;
 
         _playerInput.Disable();
     }
@@ -42,16 +45,34 @@ public class InputManager : MonoBehaviour
         MoveInput = ctx.ReadValue<Vector2>();
     }
 
-    private void OnBuildModeChange(InputAction.CallbackContext ctx)
+    private void OnTurretBuildModeChangeInput(InputAction.CallbackContext ctx)
     {
-        BuildModeChangeInput = true;
+        TurretBuildModeInput = true;
     }
 
-    public bool TryConsumeBuildModeChangeInput()
+    private void OnWallBuildModeChangeInput(InputAction.CallbackContext ctx)
     {
-        if (BuildModeChangeInput)
+        WallBuildModeInput = true;
+    }
+
+    public bool TryConsumeTurretBuildModeInput()
+    {
+        if (TurretBuildModeInput)
         {
-            BuildModeChangeInput = false;
+            TurretBuildModeInput = false;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TryConsumeWallBuildModeInput()
+    {
+        if (WallBuildModeInput)
+        {
+            WallBuildModeInput = false;
             return true;
         }
         else

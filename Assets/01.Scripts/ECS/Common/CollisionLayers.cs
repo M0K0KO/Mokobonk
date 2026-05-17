@@ -6,4 +6,5 @@ public static class CollisionLayers
     public const uint Enemy      = 1u << 1;
     public const uint Projectile = 1u << 2;
     public const uint Turret = 1u << 3;
+    public const uint Wall = 1u << 4;
 }

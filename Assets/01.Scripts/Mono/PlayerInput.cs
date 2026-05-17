@@ -102,9 +102,18 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""BuildModeChange"",
+                    ""name"": ""TurretBuildMode"",
                     ""type"": ""Button"",
                     ""id"": ""91d4ab6c-44ac-401f-9700-988348613a60"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""WallBuildMode"",
+                    ""type"": ""Button"",
+                    ""id"": ""2c998f6e-30cb-441d-8dd8-8d8e1a3fddee"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -174,7 +183,18 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""BuildModeChange"",
+                    ""action"": ""TurretBuildMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e9164cac-2494-4339-8070-a667df4e5097"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""WallBuildMode"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -186,7 +206,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         // Gameplay
         m_Gameplay = asset.FindActionMap("Gameplay", throwIfNotFound: true);
         m_Gameplay_Move = m_Gameplay.FindAction("Move", throwIfNotFound: true);
-        m_Gameplay_BuildModeChange = m_Gameplay.FindAction("BuildModeChange", throwIfNotFound: true);
+        m_Gameplay_TurretBuildMode = m_Gameplay.FindAction("TurretBuildMode", throwIfNotFound: true);
+        m_Gameplay_WallBuildMode = m_Gameplay.FindAction("WallBuildMode", throwIfNotFound: true);
     }
 
     ~@PlayerInput()
@@ -268,7 +289,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Gameplay;
     private List<IGameplayActions> m_GameplayActionsCallbackInterfaces = new List<IGameplayActions>();
     private readonly InputAction m_Gameplay_Move;
-    private readonly InputAction m_Gameplay_BuildModeChange;
+    private readonly InputAction m_Gameplay_TurretBuildMode;
+    private readonly InputAction m_Gameplay_WallBuildMode;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -285,9 +307,13 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Move => m_Wrapper.m_Gameplay_Move;
         /// <summary>
-        /// Provides access to the underlying input action "Gameplay/BuildModeChange".
+        /// Provides access to the underlying input action "Gameplay/TurretBuildMode".
         /// </summary>
-        public InputAction @BuildModeChange => m_Wrapper.m_Gameplay_BuildModeChange;
+        public InputAction @TurretBuildMode => m_Wrapper.m_Gameplay_TurretBuildMode;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/WallBuildMode".
+        /// </summary>
+        public InputAction @WallBuildMode => m_Wrapper.m_Gameplay_WallBuildMode;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -317,9 +343,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
-            @BuildModeChange.started += instance.OnBuildModeChange;
-            @BuildModeChange.performed += instance.OnBuildModeChange;
-            @BuildModeChange.canceled += instance.OnBuildModeChange;
+            @TurretBuildMode.started += instance.OnTurretBuildMode;
+            @TurretBuildMode.performed += instance.OnTurretBuildMode;
+            @TurretBuildMode.canceled += instance.OnTurretBuildMode;
+            @WallBuildMode.started += instance.OnWallBuildMode;
+            @WallBuildMode.performed += instance.OnWallBuildMode;
+            @WallBuildMode.canceled += instance.OnWallBuildMode;
         }
 
         /// <summary>
@@ -334,9 +363,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
             @Move.canceled -= instance.OnMove;
-            @BuildModeChange.started -= instance.OnBuildModeChange;
-            @BuildModeChange.performed -= instance.OnBuildModeChange;
-            @BuildModeChange.canceled -= instance.OnBuildModeChange;
+            @TurretBuildMode.started -= instance.OnTurretBuildMode;
+            @TurretBuildMode.performed -= instance.OnTurretBuildMode;
+            @TurretBuildMode.canceled -= instance.OnTurretBuildMode;
+            @WallBuildMode.started -= instance.OnWallBuildMode;
+            @WallBuildMode.performed -= instance.OnWallBuildMode;
+            @WallBuildMode.canceled -= instance.OnWallBuildMode;
         }
 
         /// <summary>
@@ -385,11 +417,18 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnMove(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "BuildModeChange" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "TurretBuildMode" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnBuildModeChange(InputAction.CallbackContext context);
+        void OnTurretBuildMode(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "WallBuildMode" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnWallBuildMode(InputAction.CallbackContext context);
     }
 }

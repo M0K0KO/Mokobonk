@@ -29,7 +29,6 @@ partial struct CoreContactDamageSystem : ISystem
 
         var queue = SystemAPI.GetSingleton<CoreDamageQueueSingleton>().Queue;
 
-
         var jobHandle = new CoreContactJob
         {
             CoreTag = coreTagLookup,

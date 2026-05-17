@@ -31,6 +31,30 @@ public class TurretAuthoring : MonoBehaviour
                 ProjectileSpeed = authoring.ProjectileSpeed,
                 ProjectilePrefab = GetEntity(authoring.ProjectilePrefab, TransformUsageFlags.Dynamic)
             });
+
+            var collider = Unity.Physics.BoxCollider.Create(
+                new Unity.Physics.BoxGeometry
+                {
+                    Center = new Unity.Mathematics.float3(0, 0.5f, 0f),
+                    Size = new Unity.Mathematics.float3(1f, 1f, 1f),
+                    Orientation = Quaternion.identity,
+                    BevelRadius = 0f
+                },
+                new Unity.Physics.CollisionFilter
+                {
+                    BelongsTo = CollisionLayers.Turret,
+                    CollidesWith = CollisionLayers.Enemy,
+                    GroupIndex = 0
+                },
+                new Unity.Physics.Material
+                {
+                    CollisionResponse = CollisionResponsePolicy.Collide,
+                }
+            );
+            AddComponent(entity, new PhysicsCollider { Value = collider });
+            AddComponent(entity, new PhysicsVelocity());
+            AddComponent(entity, PhysicsMass.CreateKinematic(MassProperties.UnitSphere));
+            AddSharedComponent(entity, new PhysicsWorldIndex { Value = 0 });
         }
     }
 }

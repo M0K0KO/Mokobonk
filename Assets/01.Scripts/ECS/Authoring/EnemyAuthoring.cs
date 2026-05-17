@@ -27,7 +27,7 @@ public class EnemyAuthoring : MonoBehaviour
                 new Unity.Physics.CollisionFilter
                 {
                     BelongsTo = CollisionLayers.Enemy,
-                    CollidesWith = CollisionLayers.Enemy | CollisionLayers.Projectile | CollisionLayers.Core,
+                    CollidesWith = CollisionLayers.Enemy | CollisionLayers.Projectile | CollisionLayers.Core | CollisionLayers.Wall | CollisionLayers.Turret,
                     GroupIndex = 0
                 },
                 new Unity.Physics.Material
@@ -37,6 +37,14 @@ public class EnemyAuthoring : MonoBehaviour
             );
             AddBlobAsset(ref collider, out _);
             AddComponent(entity, new PhysicsCollider { Value = collider });
+            AddSharedComponent(entity, new PhysicsWorldIndex { Value = 0 });
+
+            var mass = PhysicsMass.CreateDynamic(MassProperties.UnitSphere, 1f);
+            mass.InverseInertia = new float3(0f, mass.InverseInertia.y, 0f);
+            AddComponent(entity, mass);
+
+            AddComponent(entity, new PhysicsVelocity());
+
             AddComponent(entity, new ContactDamage { Value = authoring.contactDamage });
         }
     }

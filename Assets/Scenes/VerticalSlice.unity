@@ -1508,8 +1508,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50a0645eae11089469693ada475ba420, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turretPrefab: {fileID: 5042712361935188230, guid: 2237aa0c140108a4ab0584b969342fdc, type: 3}
-  ghostPrefab: {fileID: 2007665406238959240, guid: c1c1504530185694fa6638049712357d, type: 3}
+  turretGhostPrefab: {fileID: 2007665406238959240, guid: c1c1504530185694fa6638049712357d, type: 3}
+  wallGhostPrefab: {fileID: 5024640195925586572, guid: 4cadd2ab330565f41a469ac657de9c98, type: 3}
   ghostValidMat: {fileID: 2100000, guid: 3851c9c9bae81ea4ab8040588818d097, type: 2}
   ghostInvalidMat: {fileID: 2100000, guid: 712cf247614158647b9a1d94937d14b6, type: 2}
 --- !u!1 &1437895927

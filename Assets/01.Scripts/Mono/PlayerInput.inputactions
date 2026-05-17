@@ -16,9 +16,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "BuildModeChange",
+                    "name": "TurretBuildMode",
                     "type": "Button",
                     "id": "91d4ab6c-44ac-401f-9700-988348613a60",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "WallBuildMode",
+                    "type": "Button",
+                    "id": "2c998f6e-30cb-441d-8dd8-8d8e1a3fddee",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -88,7 +97,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "BuildModeChange",
+                    "action": "TurretBuildMode",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e9164cac-2494-4339-8070-a667df4e5097",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WallBuildMode",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

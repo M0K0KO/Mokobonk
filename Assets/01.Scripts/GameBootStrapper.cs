@@ -10,8 +10,10 @@ public class GameBootStrapper : MonoBehaviour
     private Entity _queueEntity;
     private Entity _stateEntity;
 
-    private NativeQueue<SpawnTurretCommand> _spawnQueue;
-    private NativeHashMap<Unity.Mathematics.int2, Entity> _occupancyMap;
+    private NativeQueue<SpawnTurretCommand> _turretSpawnQueue;
+    private NativeQueue<SpawnWallCommand> _wallSpawnQueue;
+
+    private NativeHashMap<int2, Entity> _occupancyMap;
 
     private void Awake()
     {
@@ -29,10 +31,12 @@ public class GameBootStrapper : MonoBehaviour
             State = GameState.Playing
         });
 
-        _spawnQueue = new NativeQueue<SpawnTurretCommand>(Allocator.Persistent);
-        _occupancyMap = new NativeHashMap<Unity.Mathematics.int2, Entity>(256, Allocator.Persistent);
+        _turretSpawnQueue = new NativeQueue<SpawnTurretCommand>(Allocator.Persistent);
+        _wallSpawnQueue = new NativeQueue<SpawnWallCommand>(Allocator.Persistent);
+        _occupancyMap = new NativeHashMap<int2, Entity>(256, Allocator.Persistent);
 
-        _entityManager.CreateSingleton(new SpawnTurretQueueSingleton { Queue = _spawnQueue });
+        _entityManager.CreateSingleton(new SpawnTurretQueueSingleton { Queue = _turretSpawnQueue });
+        _entityManager.CreateSingleton(new SpawnWallQueueSingleton { Queue = _wallSpawnQueue });
         _entityManager.CreateSingleton(new GridOccupancySingleton { Map = _occupancyMap });
     }
 
@@ -49,7 +53,8 @@ public class GameBootStrapper : MonoBehaviour
             }
         }
 
-        if (_spawnQueue.IsCreated) _spawnQueue.Dispose();
+        if (_turretSpawnQueue.IsCreated) _turretSpawnQueue.Dispose();
+        if (_wallSpawnQueue.IsCreated) _wallSpawnQueue.Dispose();
         if (_occupancyMap.IsCreated) _occupancyMap.Dispose();
     }
 }
