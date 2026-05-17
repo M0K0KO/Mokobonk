@@ -7,7 +7,7 @@ using Unity.Transforms;
 
 [BurstCompile]
 [UpdateInGroup(typeof(SimulationSystemGroup))]
-[UpdateAfter(typeof(EnemyAISystem))]
+[UpdateAfter(typeof(EnemyMovementSystem))]
 public partial struct TurretTargetingSystem : ISystem
 {
     private EntityQuery _enemyQuery;

@@ -5,7 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-public partial struct SpatialIndexUpdateSyste : ISystem
+public partial struct SpatialIndexUpdateSystem : ISystem
 {
     private EntityQuery _enemyQuery;
 

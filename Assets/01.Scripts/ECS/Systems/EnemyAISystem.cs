@@ -9,20 +9,28 @@ using UnityEngine;
 [BurstCompile]
 [UpdateInGroup(typeof(SimulationSystemGroup))]
 [UpdateAfter(typeof(EnemySpawnSystem))]
-partial struct EnemyAISystem : ISystem
+[UpdateAfter(typeof(FlowFieldUpdateSystem))]
+[UpdateAfter(typeof(SpatialIndexUpdateSystem))]
+partial struct EnemyMovementSystem : ISystem
 {
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<CorePositionSingleton>();
+        state.RequireForUpdate<FlowFieldSingleton>();
+        state.RequireForUpdate<GridConfigSingleton>();
+        state.RequireForUpdate<SpatialIndexSingleton>();
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        state.CompleteDependency();
+
         var field = SystemAPI.GetSingleton<FlowFieldSingleton>();
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
         var corePos = SystemAPI.GetSingleton<CorePositionSingleton>().Value;
+        var spatial = SystemAPI.GetSingleton<SpatialIndexSingleton>();
 
         new ChaseCoreJob
         {
@@ -33,6 +41,11 @@ partial struct EnemyAISystem : ISystem
             CellSize = grid.CellSize,
             GridSize = grid.GridSize,
             CorePos = corePos,
+
+            SpatialMap = spatial.Map,
+            SpatialOrigin = spatial.Origin,
+            SpatialCell = spatial.CellSize,
+
             DeltaTime = SystemAPI.Time.DeltaTime
         }.ScheduleParallel();
     }
@@ -55,9 +68,20 @@ public partial struct ChaseCoreJob : IJobEntity
     public float CellSize;
     public int2 GridSize;
     public float3 CorePos;
+
+    [ReadOnly] public NativeParallelMultiHashMap<int2, EnemySpatialEntry> SpatialMap;
+    public float3 SpatialOrigin;
+    public float SpatialCell;
+
     public float DeltaTime;
 
+    private const float SeparationRadius = 1.5f;
+    private const float SeparationRadiusSq = SeparationRadius * SeparationRadius;
+    private const float SeparationWeight = 0.8f;
+    private const float VelocitySmoothing = 8f;
+
     private void Execute(
+        Entity self,
         ref LocalTransform transform, 
         in MoveSpeed moveSpeed, 
         in RotateSpeed rotateSpeed, 
@@ -65,35 +89,76 @@ public partial struct ChaseCoreJob : IJobEntity
         in EnemyTag _)
     {
         int2 cell = GridUtility.WorldToCell(transform.Position, GridOrigin, CellSize);
-        float3 dir;
+        float3 flowDir = float3.zero;
 
         if (GridUtility.IsInBounds(cell, GridSize))
         {
             int idx = cell.x + cell.y * FieldWidth;
-            dir = FlowDirections[idx];
+            flowDir = FlowDirections[idx];
+        }
 
-            if (math.lengthsq(dir) < math.EPSILON)
+        if (math.lengthsq(flowDir) < 1e-4f)
+        {
+            velocity.Linear = float3.zero;
+            transform.Position = new float3(transform.Position.x, 0.55f, transform.Position.z);
+            return;
+        }
+
+        float3 separation = float3.zero;
+        int2 spatialCenter = SpatialIndexUtility.WorldToCell(
+            transform.Position, SpatialOrigin, SpatialCell);
+
+        for (int dy = -1; dy <= 1; dy++)
+        {
+            for (int dx = -1; dx <= 1; dx++)
             {
-                velocity.Linear = float3.zero;
-                return;
+                int2 scell = spatialCenter + new int2(dx, dy);
+                if (!SpatialMap.TryGetFirstValue(scell, out var entry, out var it)) continue;
+
+                do
+                {
+                    if (entry.Entity == self) continue;
+
+                    float3 away = transform.Position - entry.Position;
+                    away.y = 0f;
+                    float distSq = math.lengthsq(away);
+                    if (distSq < 1e-4f || distSq > SeparationRadiusSq) continue;
+
+                    separation += away / distSq;
+                }
+                while (SpatialMap.TryGetNextValue(out entry, ref it));
             }
+        }
+
+        float3 desiredDir = flowDir + separation * SeparationWeight;
+        desiredDir.y = 0f;
+
+        if (math.lengthsq(desiredDir) < 1e-4f)
+        {
+            desiredDir = flowDir;
         }
         else
         {
-            float3 toCore = CorePos - transform.Position;
-            toCore.y = 0f;
-            float distSq = math.lengthsq(toCore);
-            if (distSq < math.EPSILON) { velocity.Linear = float3.zero; return; }
-            {
-                dir =toCore * math.rsqrt(distSq);
-            }
+            desiredDir = math.normalize(desiredDir);
         }
 
-        velocity.Linear = new float3(dir.x * moveSpeed.Speed, 0f, dir.z * moveSpeed.Speed);
+        float3 targetVel = new float3(
+            desiredDir.x * moveSpeed.Speed,
+            0f,
+            desiredDir.z * moveSpeed.Speed
+        );
 
-        if (math.lengthsq(dir) > math.EPSILON)
+        velocity.Linear = math.lerp(
+            velocity.Linear,
+            targetVel,
+            math.saturate(DeltaTime * VelocitySmoothing)
+        );
+
+        float3 lookDir = velocity.Linear;
+        lookDir.y = 0f;
+        if (math.lengthsq(lookDir) > math.EPSILON)
         {
-            quaternion targetRot = quaternion.LookRotationSafe(dir, math.up());
+            quaternion targetRot = quaternion.LookRotationSafe(math.normalize(lookDir), math.up());
             transform.Rotation = math.slerp(
                 transform.Rotation,
                 targetRot,

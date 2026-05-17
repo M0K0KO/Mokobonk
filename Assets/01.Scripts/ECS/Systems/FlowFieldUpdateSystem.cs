@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 
 [UpdateInGroup(typeof(SimulationSystemGroup))]
-[UpdateBefore(typeof(EnemyAISystem))]
+[UpdateBefore(typeof(EnemyMovementSystem))]
 public partial struct FlowFieldUpdateSystem : ISystem
 {
     public void OnCreate(ref SystemState state)
