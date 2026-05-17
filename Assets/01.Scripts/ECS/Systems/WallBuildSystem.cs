@@ -43,11 +43,9 @@ public partial struct WallBuildSystem : ISystem
             anyBuilt = true;
         }
 
-        /*
         if (anyBuilt && SystemAPI.HasSingleton<FlowFieldDirtyFlag>())
         {
             SystemAPI.SetSingleton(new FlowFieldDirtyFlag { Value = true });
         }
-        */
     }
 }

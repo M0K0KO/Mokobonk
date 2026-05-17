@@ -481,7 +481,7 @@ GameObject:
   - component: {fileID: 1829280105}
   - component: {fileID: 1829280106}
   m_Layer: 0
-  m_Name: Grid
+  m_Name: GridConfig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -619,9 +619,9 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1829280105}
   - {fileID: 295992847}
   - {fileID: 2040767658}
-  - {fileID: 1829280105}
   - {fileID: 492740803}
   - {fileID: 2126466023}
   - {fileID: 543501432}

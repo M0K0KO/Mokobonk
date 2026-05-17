@@ -15,6 +15,9 @@ public class GameBootStrapper : MonoBehaviour
 
     private NativeHashMap<int2, Entity> _occupancyMap;
 
+    private NativeArray<float3> _flowDirections;
+    private NativeArray<ushort> _flowCosts;
+
     private void Awake()
     {
         _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
@@ -40,6 +43,33 @@ public class GameBootStrapper : MonoBehaviour
         _entityManager.CreateSingleton(new GridOccupancySingleton { Map = _occupancyMap });
     }
 
+    private void Start()
+    {
+        var gridQuery = _entityManager.CreateEntityQuery(typeof(GridConfigSingleton));
+        if (!gridQuery.TryGetSingleton<GridConfigSingleton>(out var grid))
+        {
+            Debug.LogError("GridConfigSingleton not baked yet. Check SubScene loaded.");
+            return;
+        }
+
+        int w = grid.GridSize.x;
+        int h = grid.GridSize.y;
+        int total = w * h;
+
+        _flowDirections = new NativeArray<float3>(total, Allocator.Persistent);
+        _flowCosts = new NativeArray<ushort>(total, Allocator.Persistent);
+
+        _entityManager.CreateSingleton(new FlowFieldSingleton
+        {
+            Directions = _flowDirections,
+            Costs = _flowCosts,
+            Width = w,
+            Height = h
+        });
+
+        _entityManager.CreateSingleton(new FlowFieldDirtyFlag { Value = true });
+    }
+
     private void OnDestroy()
     {
         if (World.DefaultGameObjectInjectionWorld != null
@@ -56,5 +86,7 @@ public class GameBootStrapper : MonoBehaviour
         if (_turretSpawnQueue.IsCreated) _turretSpawnQueue.Dispose();
         if (_wallSpawnQueue.IsCreated) _wallSpawnQueue.Dispose();
         if (_occupancyMap.IsCreated) _occupancyMap.Dispose();
+        if (_flowDirections.IsCreated) _flowDirections.Dispose();
+        if (_flowCosts.IsCreated) _flowCosts.Dispose();
     }
 }

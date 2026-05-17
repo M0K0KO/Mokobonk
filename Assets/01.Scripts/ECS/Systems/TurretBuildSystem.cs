@@ -26,6 +26,7 @@ public partial struct TurretBuildSystem : ISystem
         var prefab = SystemAPI.GetSingleton<TurretSpawnConfigSingleton>().TurretPrefab;
         var em = state.EntityManager;
 
+        bool anyBuilt = false;
         while (queue.TryDequeue(out var cmd))
         {
             if (occupancy.ContainsKey(cmd.Cell)) continue;
@@ -38,6 +39,13 @@ public partial struct TurretBuildSystem : ISystem
             em.AddComponentData(turret, new TurretGridCell { Value = cmd.Cell });
 
             occupancy.TryAdd(cmd.Cell, turret);
+
+            anyBuilt = true;
+        }
+
+        if (anyBuilt && SystemAPI.HasSingleton<FlowFieldDirtyFlag>())
+        {
+            SystemAPI.SetSingleton(new FlowFieldDirtyFlag { Value = true });
         }
     }
 }
