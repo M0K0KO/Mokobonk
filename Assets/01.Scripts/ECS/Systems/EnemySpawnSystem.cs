@@ -23,16 +23,15 @@ partial struct EnemySpawnSystem : ISystem
     {
         var spawnRW = SystemAPI.GetSingletonRW<EnemySpawnConfigSingleton>();
         ref var cfg = ref spawnRW.ValueRW;
-
         if (cfg.RemainingToSpawn <= 0) return;
 
         float now = (float)SystemAPI.Time.ElapsedTime;
         if (now < cfg.NextSpawnTime) return;
+
         cfg.NextSpawnTime = now + cfg.SpawnInterval;
         cfg.RemainingToSpawn--;
 
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
-
         int side = _rng.NextInt(0, 4);
         int2 cell = PickCellOnSide(side, grid.GridSize, ref _rng);
         float3 spawnPos = GridUtility.CellToWorld(cell, grid.Origin, grid.CellSize);
@@ -42,7 +41,16 @@ partial struct EnemySpawnSystem : ISystem
 
         var enemy = ecb.Instantiate(cfg.EnemyPrefab);
         ecb.SetComponent(enemy, LocalTransform.FromPosition(spawnPos));
-        ecb.AddSharedComponent(enemy, new PhysicsWorldIndex { Value = 0 });
+
+        var vatAsset = SystemAPI.GetComponent<VATAsset>(cfg.EnemyPrefab);
+        float walkDuration = vatAsset.Blob.Value.Clips[0].Duration;
+        float randomOffset = _rng.NextFloat(0f, walkDuration);
+
+        ecb.SetComponent(enemy, new VATAnimationState
+        {
+            CurrentClipIndex = 0,
+            CurrentClipStartTime = -randomOffset
+        });
     }
 
     [BurstCompile]

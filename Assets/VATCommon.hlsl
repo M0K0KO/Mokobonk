@@ -4,17 +4,24 @@
 TEXTURE2D(_PositionTex); SAMPLER(sampler_PositionTex);
 TEXTURE2D(_NormalTex);   SAMPLER(sampler_NormalTex);
 
-void SampleVAT(float2 vatTexel, float time, out float3 positionOS, out float3 normalOS)
+void SampleVATClip(
+    float2 vatTexel,
+    float time, 
+    float clipStartFrame,
+    float clipFrameCount,
+    float clipStartTime,
+    out float3 positionOS,
+    out float3 normalOS)
 {
-    float clipTime = time + _ClipTimeOffset;
-    float clipFrame = fmod(clipTime * _FPS, _ClipFrameCount);
+    float elapsed = time - clipStartTime;
+    float clipFrame = fmod(elapsed * _FPS, clipFrameCount);
 
     float f0 = floor(clipFrame);
-    float f1 = fmod(f0 + 1.0, _ClipFrameCount);
+    float f1 = fmod(f0 + 1.0, clipFrameCount);
     float blend = clipFrame - f0;
 
-    float frameOriginY0 = (_ClipStartFrame + f0) * _RowsPerFrame;
-    float frameOriginY1 = (_ClipStartFrame + f1) * _RowsPerFrame;
+    float frameOriginY0 = (clipStartFrame + f0) * _RowsPerFrame;
+    float frameOriginY1 = (clipStartFrame + f1) * _RowsPerFrame;
 
     float u = vatTexel.x / _TextureWidth;
     float v0 = (frameOriginY0 + vatTexel.y) / _TextureHeight;
@@ -27,5 +34,21 @@ void SampleVAT(float2 vatTexel, float time, out float3 positionOS, out float3 no
     float3 n0 = SAMPLE_TEXTURE2D_LOD(_NormalTex, sampler_NormalTex, float2(u, v0), 0).xyz;
     float3 n1 = SAMPLE_TEXTURE2D_LOD(_NormalTex, sampler_NormalTex, float2(u, v1), 0).xyz;
     normalOS = normalize(lerp(n0, n1, blend));
+}
+
+void SampleVAT(
+    float2 vatTexel,
+    float time,
+    out float3 positionOS,
+    out float3 normalOS)
+{
+    float3 posCurr, nrmCurr;
+    SampleVATClip(vatTexel, time, _ClipStartFrame, _ClipFrameCount, _ClipStartTime, posCurr, nrmCurr);
+
+    float3 posPrev, nrmPrev;
+    SampleVATClip(vatTexel, time, _PrevClipStartFrame, _PrevClipFrameCount, _PrevClipStartTime, posPrev, nrmPrev);
+
+    positionOS = lerp(posPrev, posCurr, _BlendFactor);
+    normalOS = normalize(lerp(nrmPrev, nrmCurr, _BlendFactor));
 }
 #endif

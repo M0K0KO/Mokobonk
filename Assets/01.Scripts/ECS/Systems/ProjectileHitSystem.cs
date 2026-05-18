@@ -65,6 +65,9 @@ public struct ProjectileHitJob : ITriggerEventsJob
         if (!HealthLookup.HasComponent(enemy)) return;
 
         var hp = HealthLookup[enemy];
+
+        if (hp.Current < 0f) return;
+
         hp.Current -= ProjectileDamage[projectile].Value;
         HealthLookup[enemy] = hp;
 

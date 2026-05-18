@@ -59,6 +59,7 @@ partial struct EnemyMovementSystem : ISystem
 
 
 [BurstCompile]
+[WithNone(typeof(DyingTag))]
 public partial struct ChaseCoreJob : IJobEntity
 {
     [ReadOnly] public NativeArray<float3> FlowDirections;
@@ -100,7 +101,7 @@ public partial struct ChaseCoreJob : IJobEntity
         if (math.lengthsq(flowDir) < 1e-4f)
         {
             velocity.Linear = float3.zero;
-            transform.Position = new float3(transform.Position.x, 0.55f, transform.Position.z);
+            transform.Position = new float3(transform.Position.x, 0.1f, transform.Position.z);
             return;
         }
 
@@ -165,6 +166,6 @@ public partial struct ChaseCoreJob : IJobEntity
                 math.saturate(DeltaTime * rotateSpeed.Speed)
             );
         }
-        transform.Position = new float3(transform.Position.x, 0.55f, transform.Position.z);
+        transform.Position = new float3(transform.Position.x, 0.1f, transform.Position.z);
     }
 }

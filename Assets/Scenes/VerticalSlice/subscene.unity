@@ -164,9 +164,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PrepareTime: 5
-  BaseEnemyCount: 10000
+  BaseEnemyCount: 30000
   EnemyCountPerWave: 500
-  BaseSpawnInterval: 0.0001
+  BaseSpawnInterval: 0.005
   MinSpawnInterval: 0.0001
   IntervalDecayPerWave: 0.001
 --- !u!1 &295992843
@@ -468,7 +468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fc19efcd3baee544a7c5cd1cfa7908b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  InitialGold: 500
+  InitialGold: 1000
   EnemyKillReward: 5
 --- !u!1 &1829280104
 GameObject:
@@ -516,7 +516,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CellSize: 1
   GridSize: {x: 100, y: 100}
-  Origin: {x: -50, y: 0.6, z: -50}
+  Origin: {x: -50, y: 0.1, z: -50}
   drawGrid: 1
   drawBounds: 0
   gridColor: {r: 0, g: 1, b: 0.5, a: 0.2}

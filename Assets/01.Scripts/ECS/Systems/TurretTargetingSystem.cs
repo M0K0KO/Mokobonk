@@ -14,6 +14,8 @@ public partial struct TurretTargetingSystem : ISystem
 
     public void OnCreate(ref SystemState state)
     {
+        state.RequireForUpdate<SpatialIndexSingleton>();
+
         _enemyQuery = state.GetEntityQuery(
             ComponentType.ReadOnly<EnemyTag>(),
             ComponentType.ReadOnly<LocalTransform>()
@@ -104,6 +106,5 @@ public partial struct TurretFireJob : IJobEntity
         ECB.SetComponent(chunkIdx, projectile, new ProjectileDamage { Value = stats.Damage });
 
         stats.Cooldown = 1f / stats.FireRate;
-
     }
 }

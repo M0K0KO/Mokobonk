@@ -18,7 +18,12 @@ Shader "MokoVAT/VAT Lit"
         _FPS              ("FPS", Float) = 30
         _ClipStartFrame   ("Clip Start Frame", Float) = 0
         _ClipFrameCount   ("Clip Frame Count", Float) = 1
-        _ClipTimeOffset   ("Clip Time Offset", Float) = 0
+        _ClipStartTime    ("Clip Start Time", Float) = 0
+
+        _PrevClipStartFrame  ("Prev Clip Start Frame", Float)  = 0
+        _PrevClipFrameCount  ("Prev Clip Frame Count", Float)  = 1
+        _PrevClipStartTime   ("Prev Clip Start Time", Float)  = 0
+        _BlendFactor         ("Blend Factor (0=prev, 1=curr)", Range(0,1)) = 1
     }
 
     SubShader
@@ -36,6 +41,9 @@ Shader "MokoVAT/VAT Lit"
             #pragma vertex   vert
             #pragma fragment frag
             #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
@@ -62,8 +70,33 @@ Shader "MokoVAT/VAT Lit"
                 float  _FPS;
                 float  _ClipStartFrame;
                 float  _ClipFrameCount;
-                float  _ClipTimeOffset;
+                float  _ClipStartTime;
+
+                float  _PrevClipStartFrame;
+                float  _PrevClipFrameCount;
+                float  _PrevClipStartTime;
+                float  _BlendFactor;  
             CBUFFER_END
+
+            #ifdef UNITY_DOTS_INSTANCING_ENABLED
+            UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _BlendFactor)
+            UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
+
+            #define _ClipStartFrame      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartFrame)
+            #define _ClipFrameCount      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipFrameCount)
+            #define _ClipStartTime       UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartTime)
+            #define _PrevClipStartFrame  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartFrame)
+            #define _PrevClipFrameCount  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipFrameCount)
+            #define _PrevClipStartTime   UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartTime)
+            #define _BlendFactor         UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _BlendFactor)
+            #endif
 
             #include "VATCommon.hlsl"
 
@@ -74,6 +107,7 @@ Shader "MokoVAT/VAT Lit"
                 float4 tangentOS  : TANGENT;
                 float2 uv         : TEXCOORD0;
                 float2 vatID      : TEXCOORD1;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
@@ -87,6 +121,8 @@ Shader "MokoVAT/VAT Lit"
 
             Varyings vert(Attributes IN)
             {
+                UNITY_SETUP_INSTANCE_ID(IN);
+
                 Varyings OUT;
 
                 float3 posOS, nrmOS;
@@ -147,6 +183,9 @@ Shader "MokoVAT/VAT Lit"
             #pragma fragment shadowFrag
             #pragma target 4.5
 
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
@@ -163,15 +202,41 @@ Shader "MokoVAT/VAT Lit"
                 float  _FPS;
                 float  _ClipStartFrame;
                 float  _ClipFrameCount;
-                float  _ClipTimeOffset;
+                float  _ClipStartTime;
+
+                float  _PrevClipStartFrame;
+                float  _PrevClipFrameCount;
+                float  _PrevClipStartTime;
+                float  _BlendFactor;  
+
             CBUFFER_END
+
+            #ifdef UNITY_DOTS_INSTANCING_ENABLED
+            UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _BlendFactor)
+            UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
+
+            #define _ClipStartFrame      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartFrame)
+            #define _ClipFrameCount      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipFrameCount)
+            #define _ClipStartTime       UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartTime)
+            #define _PrevClipStartFrame  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartFrame)
+            #define _PrevClipFrameCount  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipFrameCount)
+            #define _PrevClipStartTime   UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartTime)
+            #define _BlendFactor         UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _BlendFactor)
+            #endif
 
             #include "VATCommon.hlsl"
 
             float3 _LightDirection;
             float3 _LightPosition;
 
-            struct A { float3 positionOS:POSITION; float3 normalOS:NORMAL; float2 vatID:TEXCOORD1; };
+            struct A { float3 positionOS:POSITION; float3 normalOS:NORMAL; float2 vatID:TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct V { float4 positionHCS:SV_POSITION; };
 
             float4 GetShadowPositionHClip(float3 posOS, float3 nrmOS)
@@ -196,6 +261,8 @@ Shader "MokoVAT/VAT Lit"
 
             V shadowVert(A IN)
             {
+                UNITY_SETUP_INSTANCE_ID(IN);
+
                 float3 posOS, nrmOS;
                 SampleVAT(IN.vatID, _Time.y, posOS, nrmOS);
 
@@ -222,6 +289,9 @@ Shader "MokoVAT/VAT Lit"
             #pragma fragment depthFrag
             #pragma target 4.5
 
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
@@ -237,16 +307,43 @@ Shader "MokoVAT/VAT Lit"
                 float  _FPS;
                 float  _ClipStartFrame;
                 float  _ClipFrameCount;
-                float  _ClipTimeOffset;
+                float  _ClipStartTime;
+
+                float  _PrevClipStartFrame;
+                float  _PrevClipFrameCount;
+                float  _PrevClipStartTime;
+                float  _BlendFactor;  
             CBUFFER_END
+
+            #ifdef UNITY_DOTS_INSTANCING_ENABLED
+            UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _BlendFactor)
+            UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
+
+            #define _ClipStartFrame      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartFrame)
+            #define _ClipFrameCount      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipFrameCount)
+            #define _ClipStartTime       UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartTime)
+            #define _PrevClipStartFrame  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartFrame)
+            #define _PrevClipFrameCount  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipFrameCount)
+            #define _PrevClipStartTime   UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartTime)
+            #define _BlendFactor         UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _BlendFactor)
+            #endif
 
             #include "VATCommon.hlsl"
 
-            struct A { float3 positionOS:POSITION; float3 normalOS:NORMAL; float2 vatID:TEXCOORD1; };
+            struct A { float3 positionOS:POSITION; float3 normalOS:NORMAL; float2 vatID:TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct V { float4 positionHCS:SV_POSITION; };
 
             V depthVert(A IN)
             {
+                UNITY_SETUP_INSTANCE_ID(IN);
+
                 float3 posOS, nrmOS;
                 SampleVAT(IN.vatID, _Time.y, posOS, nrmOS);
 
@@ -272,6 +369,9 @@ Shader "MokoVAT/VAT Lit"
             #pragma fragment dnFrag
             #pragma target 4.5
 
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
@@ -287,16 +387,43 @@ Shader "MokoVAT/VAT Lit"
                 float  _FPS;
                 float  _ClipStartFrame;
                 float  _ClipFrameCount;
-                float  _ClipTimeOffset;
+                float  _ClipStartTime;
+                
+                float  _PrevClipStartFrame;
+                float  _PrevClipFrameCount;
+                float  _PrevClipStartTime;
+                float  _BlendFactor;  
             CBUFFER_END
+
+            #ifdef UNITY_DOTS_INSTANCING_ENABLED
+            UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _ClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartFrame)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipFrameCount)
+                UNITY_DOTS_INSTANCED_PROP(float, _PrevClipStartTime)
+                UNITY_DOTS_INSTANCED_PROP(float, _BlendFactor)
+            UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
+
+            #define _ClipStartFrame      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartFrame)
+            #define _ClipFrameCount      UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipFrameCount)
+            #define _ClipStartTime       UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _ClipStartTime)
+            #define _PrevClipStartFrame  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartFrame)
+            #define _PrevClipFrameCount  UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipFrameCount)
+            #define _PrevClipStartTime   UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _PrevClipStartTime)
+            #define _BlendFactor         UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float, _BlendFactor)
+            #endif
 
             #include "VATCommon.hlsl"
 
-            struct A { float3 positionOS:POSITION; float3 normalOS:NORMAL; float2 vatID:TEXCOORD1; };
+            struct A { float3 positionOS:POSITION; float3 normalOS:NORMAL; float2 vatID:TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct V { float4 positionHCS:SV_POSITION; float3 normalWS:TEXCOORD0; };
 
             V dnVert(A IN)
             {
+                UNITY_SETUP_INSTANCE_ID(IN);
+
                 float3 posOS, nrmOS;
                 SampleVAT(IN.vatID, _Time.y, posOS, nrmOS);
 

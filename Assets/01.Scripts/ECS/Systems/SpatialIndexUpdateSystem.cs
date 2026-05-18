@@ -43,6 +43,7 @@ public partial struct SpatialIndexUpdateSystem : ISystem
     }
 }
 
+[WithNone(typeof(DyingTag))]
 [BurstCompile]
 public partial struct BuildSpatialIndexJob : IJobEntity
 {

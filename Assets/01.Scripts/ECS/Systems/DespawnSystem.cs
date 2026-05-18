@@ -1,5 +1,6 @@
 using Unity.Burst;
 using Unity.Entities;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 [BurstCompile]
 [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
@@ -24,10 +25,12 @@ partial struct DespawnSystem : ISystem
                 ecb.DestroyEntity(entity);
         }
 
+        var now = (float)SystemAPI.Time.ElapsedTime;
+
         int killedThisFrame = 0;
-        foreach (var (health, entity) in SystemAPI.Query<RefRO<Health>>().WithAll<EnemyTag>().WithEntityAccess())
+        foreach (var (dying, entity) in SystemAPI.Query<RefRO<DyingTag>>().WithAll<EnemyTag>().WithEntityAccess())
         {
-            if (health.ValueRO.Current <= 0f)
+            if (now >= dying.ValueRO.DespawnTime)
             {
                 ecb.DestroyEntity(entity);
                 killedThisFrame++;
