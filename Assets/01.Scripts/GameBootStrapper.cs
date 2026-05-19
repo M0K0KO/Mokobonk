@@ -12,6 +12,7 @@ public class GameBootStrapper : MonoBehaviour
     private Entity _stateEntity;
 
     private NativeQueue<BuildCommand> _buildCommandQueue;
+    private NativeQueue<float> _damageQueue;
 
     private NativeHashMap<int2, Entity> _occupancyMap;
 
@@ -30,10 +31,10 @@ public class GameBootStrapper : MonoBehaviour
             Queue = _buildCommandQueue
         });
 
-        var damageQueue = new NativeQueue<float>(Allocator.Persistent);
+        _damageQueue = new NativeQueue<float>(Allocator.Persistent);
         _queueEntity = _entityManager.CreateSingleton(new CoreDamageQueueSingleton
         {
-            Queue = damageQueue
+            Queue = _damageQueue
         });
 
         _stateEntity = _entityManager.CreateSingleton(new GameStateSingleton
@@ -99,17 +100,7 @@ public class GameBootStrapper : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (World.DefaultGameObjectInjectionWorld != null
-            && _queueEntity != Entity.Null
-            && _entityManager.Exists(_queueEntity))
-        {
-            var queueSingleton = _entityManager.GetComponentData<CoreDamageQueueSingleton>(_queueEntity);
-            if (queueSingleton.Queue.IsCreated)
-            {
-                queueSingleton.Queue.Dispose();
-            }
-        }
-
+        if (_damageQueue.IsCreated) _damageQueue.Dispose();
         if (_buildCommandQueue.IsCreated) _buildCommandQueue.Dispose();
         if (_occupancyMap.IsCreated) _occupancyMap.Dispose();
         if (_flowDirections.IsCreated) _flowDirections.Dispose();
