@@ -1,4 +1,3 @@
-using MokoVATBaker;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -41,7 +40,7 @@ public class EnemyAuthoring : MonoBehaviour
                 new Unity.Physics.CollisionFilter
                 {
                     BelongsTo = CollisionLayers.Enemy,
-                    CollidesWith = CollisionLayers.Enemy | CollisionLayers.Projectile | CollisionLayers.Core | CollisionLayers.Wall | CollisionLayers.Turret,
+                    CollidesWith = CollisionLayers.Projectile | CollisionLayers.Core | CollisionLayers.Wall | CollisionLayers.Turret,
                     GroupIndex = 0
                 },
                 new Unity.Physics.Material
@@ -58,6 +57,8 @@ public class EnemyAuthoring : MonoBehaviour
             AddComponent(entity, mass);
             AddComponent(entity, new PhysicsVelocity());
             AddComponent(entity, new ContactDamage { Value = authoring.contactDamage });
+
+
         }
     }
 }

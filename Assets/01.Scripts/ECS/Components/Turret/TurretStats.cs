@@ -6,7 +6,5 @@ public struct TurretStats : IComponentData
     public float FireRate;
     public float Cooldown;
     public float Damage;
-    public float ProjectileSpeed;
-    public Entity ProjectilePrefab;
 }
 

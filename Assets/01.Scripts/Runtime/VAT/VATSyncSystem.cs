@@ -15,6 +15,8 @@ public partial struct VATSyncSystem : ISystem
     }
 
     [BurstCompile]
+    [WithNone(typeof(VATAnimationTransition))]
+    [WithChangeFilter(typeof(VATAnimationState))]
     partial struct SyncStaticJob : IJobEntity
     {
         void Execute(
@@ -44,6 +46,7 @@ public partial struct VATSyncSystem : ISystem
     }
 
     [BurstCompile]
+
     partial struct SyncTransitionJob : IJobEntity
     {
         public float Now;

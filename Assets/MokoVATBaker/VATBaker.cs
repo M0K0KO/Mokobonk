@@ -107,10 +107,12 @@ namespace MokoVATBaker.Editor
                         AnimationMode.SampleAnimationClip(source, clip, t);
                         AnimationMode.EndSampling();
 
-                        smr.BakeMesh(bakeMesh, true);
-
+                        //smr.BakeMesh(bakeMesh, true);
+                        smr.BakeMesh(bakeMesh, false);
+                        
                         var posList = new List<Vector3>(vertexCount);
                         var nrmList = new List<Vector3>(vertexCount);
+
                         bakeMesh.GetVertices(posList);
                         bakeMesh.GetNormals(nrmList);
 
@@ -123,6 +125,7 @@ namespace MokoVATBaker.Editor
 
                             var p = posList[v];
                             var n = nrmList[v];
+
                             posTex.SetPixel(x, y, new Color(p.x, p.y, p.z, 1f));
                             nrmTex.SetPixel(x, y, new Color(n.x, n.y, n.z, 0f));
                         }
@@ -193,6 +196,7 @@ namespace MokoVATBaker.Editor
         private static Mesh BuildBakedMesh(Mesh source, int texelsPerRow)
         {
             var m = new Mesh();
+
             m.indexFormat = source.vertexCount > 65535
                 ? UnityEngine.Rendering.IndexFormat.UInt32
                 : UnityEngine.Rendering.IndexFormat.UInt16;
@@ -216,7 +220,11 @@ namespace MokoVATBaker.Editor
             for (int s = 0; s < source.subMeshCount; s++)
                 m.SetTriangles(source.GetTriangles(s), s);
 
-            m.bounds = source.bounds; 
+            m.bounds = new Bounds(
+                center: new Vector3(0f, 1f, 0f),
+                size: new Vector3(10f, 10f, 10f)
+            );
+
             return m;
         }
 

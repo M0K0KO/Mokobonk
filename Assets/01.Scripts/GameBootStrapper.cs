@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -45,13 +46,16 @@ public class GameBootStrapper : MonoBehaviour
         _entityManager.CreateSingleton(new GridOccupancySingleton { Map = _occupancyMap });
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         var gridQuery = _entityManager.CreateEntityQuery(typeof(GridConfigSingleton));
-        if (!gridQuery.TryGetSingleton<GridConfigSingleton>(out var grid))
+
+        GridConfigSingleton grid;
+
+        while (!gridQuery.TryGetSingleton<GridConfigSingleton>(out grid))
         {
-            Debug.LogError("GridConfigSingleton not baked yet. Check SubScene loaded.");
-            return;
+            Debug.LogWarning("GridConfigSingleton not baked yet. Waiting...");
+            yield return null;
         }
 
         int w = grid.GridSize.x;

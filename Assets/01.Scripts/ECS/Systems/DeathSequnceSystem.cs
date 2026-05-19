@@ -30,7 +30,7 @@ partial struct DeathSequnceSystem : ISystem
 
     const int DieClipIndex = 1;
     const float DieBlendDuration = 0.15f;
-    const float DespawnDelay = 2.7f;
+    const float DespawnDelay = 1.0f;
 
     [BurstCompile]
     [WithNone(typeof(DyingTag))]

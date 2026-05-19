@@ -10,7 +10,6 @@ public class TurretAuthoring : MonoBehaviour
     public float Range = 8f;
     public float FireRate = 2f;
     public float Damage = 10f;
-    public float ProjectileSpeed = 20f;
 
     [Header("Projectile")]
     public GameObject ProjectilePrefab;
@@ -28,8 +27,6 @@ public class TurretAuthoring : MonoBehaviour
                 FireRate = authoring.FireRate,
                 Cooldown = 0f,
                 Damage = authoring.Damage,
-                ProjectileSpeed = authoring.ProjectileSpeed,
-                ProjectilePrefab = GetEntity(authoring.ProjectilePrefab, TransformUsageFlags.Dynamic)
             });
 
             var collider = Unity.Physics.BoxCollider.Create(

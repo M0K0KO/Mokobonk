@@ -25,19 +25,22 @@ public partial struct TurretTargetingSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         var idx = SystemAPI.GetSingleton<SpatialIndexSingleton>();
+        var healthLookup = SystemAPI.GetComponentLookup<Health>(false);
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                             .CreateCommandBuffer(state.WorldUnmanaged);
 
         state.CompleteDependency();
 
-        new TurretFireJob
+        state.Dependency = new TurretFireJob
         {
             DeltaTime = SystemAPI.Time.DeltaTime,
+            ElapsedTime = (float)SystemAPI.Time.ElapsedTime,
             SpatialMap = idx.Map,
             SpatialOrigin = idx.Origin,
             SpatialCellSize = idx.CellSize,
+            HealthLookup = healthLookup,
             ECB = ecb.AsParallelWriter()
-        }.ScheduleParallel();
+        }.ScheduleParallel(state.Dependency);
     }
 }
 
@@ -45,9 +48,16 @@ public partial struct TurretTargetingSystem : ISystem
 public partial struct TurretFireJob : IJobEntity
 {
     public float DeltaTime;
+    public float ElapsedTime;
+
     [ReadOnly] public NativeParallelMultiHashMap<int2, EnemySpatialEntry> SpatialMap;
+
     public float3 SpatialOrigin;
     public float SpatialCellSize;
+
+    [NativeDisableParallelForRestriction]
+    public ComponentLookup<Health> HealthLookup;
+
     public EntityCommandBuffer.ParallelWriter ECB;
 
     void Execute([ChunkIndexInQuery] int chunkIdx, in LocalTransform turretTransform, ref TurretStats stats)
@@ -77,7 +87,9 @@ public partial struct TurretFireJob : IJobEntity
                 {
                     float3 d = entry.Position - turretTransform.Position;
                     d.y = 0f;
+
                     float distSq = math.lengthsq(d);
+
                     if (distSq < bestDistSq)
                     {
                         bestDistSq = distSq;
@@ -93,17 +105,26 @@ public partial struct TurretFireJob : IJobEntity
 
         float3 toEnemy = bestPos - turretTransform.Position;
         toEnemy.y = 0f;
-        if (math.lengthsq(toEnemy) < 1e-6f) return;
-        float3 dir = math.normalize(toEnemy);
 
-        var projectile = ECB.Instantiate(chunkIdx, stats.ProjectilePrefab);
-        ECB.SetComponent(chunkIdx, projectile, LocalTransform.FromPosition(turretTransform.Position));
-        ECB.SetComponent(chunkIdx, projectile, new ProjectileVelocity
+        if (math.lengthsq(toEnemy) < 1e-6f) return;
+
+        if (HealthLookup.HasComponent(bestEnemy))
         {
-            Direction = dir,
-            Speed = stats.ProjectileSpeed,
+            Health hp = HealthLookup[bestEnemy];
+            hp.Current -= stats.Damage;
+            HealthLookup[bestEnemy] = hp;
+        }
+
+        var eventEntity = ECB.CreateEntity(chunkIdx);
+        ECB.AddComponent(chunkIdx, eventEntity, new HitscanFiredEvent
+        {
+            Origin = turretTransform.Position,
+            Hit = bestPos,
+            MuzzleId = VfxId.GunnerMuzzle,
+            BeamId = VfxId.GunnerBeam,
+            HitSparkId = VfxId.GunnerHitSpark,
+            SpawnTime = ElapsedTime,
         });
-        ECB.SetComponent(chunkIdx, projectile, new ProjectileDamage { Value = stats.Damage });
 
         stats.Cooldown = 1f / stats.FireRate;
     }
