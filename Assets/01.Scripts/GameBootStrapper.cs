@@ -11,8 +11,7 @@ public class GameBootStrapper : MonoBehaviour
     private Entity _queueEntity;
     private Entity _stateEntity;
 
-    private NativeQueue<SpawnTurretCommand> _turretSpawnQueue;
-    private NativeQueue<SpawnWallCommand> _wallSpawnQueue;
+    private NativeQueue<BuildCommand> _buildCommandQueue;
 
     private NativeHashMap<int2, Entity> _occupancyMap;
 
@@ -25,8 +24,13 @@ public class GameBootStrapper : MonoBehaviour
     {
         _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        var damageQueue = new NativeQueue<float>(Allocator.Persistent);
+        _buildCommandQueue = new NativeQueue<BuildCommand>(Allocator.Persistent);
+        var buildQueueEntity = _entityManager.CreateSingleton(new SpawnBuildQueueSingleton
+        {
+            Queue = _buildCommandQueue
+        });
 
+        var damageQueue = new NativeQueue<float>(Allocator.Persistent);
         _queueEntity = _entityManager.CreateSingleton(new CoreDamageQueueSingleton
         {
             Queue = damageQueue
@@ -37,12 +41,19 @@ public class GameBootStrapper : MonoBehaviour
             State = GameState.Playing
         });
 
-        _turretSpawnQueue = new NativeQueue<SpawnTurretCommand>(Allocator.Persistent);
-        _wallSpawnQueue = new NativeQueue<SpawnWallCommand>(Allocator.Persistent);
+        var phaseEntity = _entityManager.CreateSingleton(new GamePhaseSingleton
+        {
+            Phase = GamePhase.Preparation,
+            PhaseElapsed = 0f,
+        });
+
+        var infEntity = _entityManager.CreateSingleton(new CoreInfluenceGridSingleton
+        {
+            Cells = new NativeHashSet<int2>(256, Allocator.Persistent),
+        });
+
         _occupancyMap = new NativeHashMap<int2, Entity>(256, Allocator.Persistent);
 
-        _entityManager.CreateSingleton(new SpawnTurretQueueSingleton { Queue = _turretSpawnQueue });
-        _entityManager.CreateSingleton(new SpawnWallQueueSingleton { Queue = _wallSpawnQueue });
         _entityManager.CreateSingleton(new GridOccupancySingleton { Map = _occupancyMap });
     }
 
@@ -99,8 +110,7 @@ public class GameBootStrapper : MonoBehaviour
             }
         }
 
-        if (_turretSpawnQueue.IsCreated) _turretSpawnQueue.Dispose();
-        if (_wallSpawnQueue.IsCreated) _wallSpawnQueue.Dispose();
+        if (_buildCommandQueue.IsCreated) _buildCommandQueue.Dispose();
         if (_occupancyMap.IsCreated) _occupancyMap.Dispose();
         if (_flowDirections.IsCreated) _flowDirections.Dispose();
         if (_flowCosts.IsCreated) _flowCosts.Dispose();

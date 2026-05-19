@@ -2,6 +2,8 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
+using Unity.Transforms;
+using UnityEngine.UIElements;
 
 partial struct DeathSequnceSystem : ISystem
 {
@@ -42,6 +44,7 @@ partial struct DeathSequnceSystem : ISystem
         void Execute(
             [ChunkIndexInQuery] int chunkIndex,
             Entity entity,
+            in LocalTransform transform,
             in Health health,
             in VATAnimationState animState)
         {
@@ -50,6 +53,13 @@ partial struct DeathSequnceSystem : ISystem
             ECB.AddComponent(chunkIndex, entity, new DyingTag
             {
                 DespawnTime = Now + DespawnDelay
+            });
+
+            var evtEntity = ECB.CreateEntity(chunkIndex);
+            ECB.AddComponent(chunkIndex, evtEntity, new EnemyKilledEvent
+            {
+                Position = transform.Position,
+                EnemyType = 0
             });
 
             VATAnimationCommands.PlayClip(

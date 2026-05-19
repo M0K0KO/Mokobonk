@@ -38,15 +38,7 @@ partial struct WaveSystem : ISystem
 
                 if (now >= wave.NextWaveTime)
                 {
-                    wave.CurrentWave++;
-                    int count = cfg.BaseEnemyCount + (wave.CurrentWave - 1) * cfg.EnemyCountPerWave;
-                    float interval = math.max(cfg.MinSpawnInterval, cfg.BaseSpawnInterval - (wave.CurrentWave - 1) * cfg.IntervalDecayPerWave);
-
-                    spawnRW.ValueRW.RemainingToSpawn = count;
-                    spawnRW.ValueRW.SpawnInterval = interval;
-                    spawnRW.ValueRW.NextSpawnTime = now;
-                    wave.AliveEnemies = count;
-                    wave.Phase = WavePhase.Spawning;
+                    StartNextWave(ref wave, ref spawnRW.ValueRW, cfg, now);
                 }
                 break;
 
@@ -56,7 +48,7 @@ partial struct WaveSystem : ISystem
                 break;
 
             case WavePhase.Clearing:
-                if (wave.AliveEnemies <= 0)
+                if (wave.RemainingEnemies <= 0)
                 {
                     wave.Phase = WavePhase.Preparing;
                     wave.NextWaveTime = now + cfg.PrepareTime;
@@ -66,8 +58,23 @@ partial struct WaveSystem : ISystem
     }
 
     [BurstCompile]
-    public void OnDestroy(ref SystemState state)
+    private void StartNextWave(
+    ref WaveStateSingleton wave,
+    ref EnemySpawnConfigSingleton spawn,
+    in WaveConfigSingleton cfg,
+    float now)
     {
-        
+        wave.CurrentWave++;
+        int count = cfg.BaseEnemyCount + (wave.CurrentWave - 1) * cfg.EnemyCountPerWave;
+        float interval = math.max(
+            cfg.MinSpawnInterval,
+            cfg.BaseSpawnInterval - (wave.CurrentWave - 1) * cfg.IntervalDecayPerWave);
+
+        spawn.RemainingToSpawn = count;
+        spawn.SpawnInterval = interval;
+        spawn.NextSpawnTime = now;
+
+        wave.RemainingEnemies = count;
+        wave.Phase = WavePhase.Spawning;
     }
 }

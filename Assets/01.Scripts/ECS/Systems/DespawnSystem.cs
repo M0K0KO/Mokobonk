@@ -37,12 +37,12 @@ partial struct DespawnSystem : ISystem
             }
         }
 
-        if (killedThisFrame >0)
+        if (killedThisFrame > 0)
         {
             if (SystemAPI.HasSingleton<WaveStateSingleton>())
             {
                 var waveRW = SystemAPI.GetSingletonRW<WaveStateSingleton>();
-                waveRW.ValueRW.AliveEnemies -= killedThisFrame;
+                waveRW.ValueRW.RemainingEnemies -= killedThisFrame;
             }
 
             if (SystemAPI.HasSingleton<ResourceSingleton>())

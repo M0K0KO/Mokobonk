@@ -6,50 +6,45 @@ public class BuildController : MonoBehaviour
 {
     [SerializeField] private GameObject turretGhostPrefab;
     [SerializeField] private GameObject wallGhostPrefab;
-
     [SerializeField] private Material ghostValidMat;
     [SerializeField] private Material ghostInvalidMat;
 
     private Camera _cam;
     private InputManager _inputManager;
-
-
-    private enum BuildMode { Idle, Turret, Wall }
-    private BuildMode _mode = BuildMode.Idle;
-
-    private GameObject _ghostInstance;
-    private MeshRenderer _ghostRenderer;
-    private EntityManager _entityManager;
+    private EntityManager _em;
 
     private EntityQuery _gridQuery, _occupancyQuery, _resourceQuery;
-    private EntityQuery _turretQueueQuery, _wallQueueQuery;
-    private EntityQuery _turretCfgQuery, _wallCfgQuery;
+    private EntityQuery _queueQuery, _registryQuery;
 
-    private void Start()
+    private BuildMode _mode = BuildMode.Idle;
+    private GameObject _ghostInstance;
+    private MeshRenderer _ghostRenderer;
+
+    private enum BuildMode { Idle, Turret, Wall }
+
+    void Start()
     {
         _inputManager = InputManager.Instance;
         _cam = Camera.main;
+        _em = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-
-        _gridQuery = _entityManager.CreateEntityQuery(typeof(GridConfigSingleton));
-        _occupancyQuery = _entityManager.CreateEntityQuery(typeof(GridOccupancySingleton));
-        _resourceQuery = _entityManager.CreateEntityQuery(typeof(ResourceSingleton));
-        _turretQueueQuery = _entityManager.CreateEntityQuery(typeof(SpawnTurretQueueSingleton));
-        _wallQueueQuery = _entityManager.CreateEntityQuery(typeof(SpawnWallQueueSingleton));
-        _turretCfgQuery = _entityManager.CreateEntityQuery(typeof(TurretSpawnConfigSingleton));
-        _wallCfgQuery = _entityManager.CreateEntityQuery(typeof(WallSpawnConfigSingleton));
+        _gridQuery = _em.CreateEntityQuery(typeof(GridConfigSingleton));
+        _occupancyQuery = _em.CreateEntityQuery(typeof(GridOccupancySingleton));
+        _resourceQuery = _em.CreateEntityQuery(typeof(ResourceSingleton));
+        _queueQuery = _em.CreateEntityQuery(typeof(SpawnBuildQueueSingleton));
+        _registryQuery = _em.CreateEntityQuery(typeof(BuildableRegistrySingleton));
     }
 
-    private void Update()
+    void Update()
     {
         HandleModeInput();
         if (_mode == BuildMode.Idle) return;
+        if (_registryQuery.IsEmpty) return;
 
         if (TryGetMouseCell(out int2 cell))
         {
             UpdateGhost(cell);
-            if (Input.GetMouseButtonDown(0)) TryPlace(cell);
+            if (Input.GetMouseButtonDown(0)) EnqueueBuild(cell);
         }
         else if (_ghostInstance != null)
         {
@@ -94,7 +89,6 @@ public class BuildController : MonoBehaviour
         cell = default;
         var ray = _cam.ScreenPointToRay(Input.mousePosition);
         if (Mathf.Approximately(ray.direction.y, 0f)) return false;
-
         float t = -ray.origin.y / ray.direction.y;
         if (t < 0f) return false;
 
@@ -102,6 +96,19 @@ public class BuildController : MonoBehaviour
         var grid = _gridQuery.GetSingleton<GridConfigSingleton>();
         cell = GridUtility.WorldToCell(worldPos, grid.Origin, grid.CellSize);
         return GridUtility.IsInBounds(cell, grid.GridSize);
+    }
+
+    private BuildableKind CurrentKind() => _mode switch
+    {
+        BuildMode.Turret => BuildableKind.Turret_Gunner,
+        BuildMode.Wall => BuildableKind.Wall,
+        _ => BuildableKind.None,
+    };
+
+    private int GetCurrentCost()
+    {
+        var reg = _registryQuery.GetSingleton<BuildableRegistrySingleton>();
+        return reg.TryGet(CurrentKind(), out var info) ? info.Cost : 0;
     }
 
     private void UpdateGhost(int2 cell)
@@ -114,42 +121,15 @@ public class BuildController : MonoBehaviour
         _ghostInstance.transform.position = snap;
         if (!_ghostInstance.activeSelf) _ghostInstance.SetActive(true);
 
-        int cost = GetCurrentCost();
-        bool canPlace = !occupancy.Map.ContainsKey(cell) && res.Gold >= cost;
+        bool canPlace = !occupancy.Map.ContainsKey(cell) && res.Gold >= GetCurrentCost();
 
         if (_ghostRenderer != null)
             _ghostRenderer.sharedMaterial = canPlace ? ghostValidMat : ghostInvalidMat;
     }
 
-    private void TryPlace(int2 cell)
+    private void EnqueueBuild(int2 cell)
     {
-        var occupancy = _occupancyQuery.GetSingleton<GridOccupancySingleton>();
-        if (occupancy.Map.ContainsKey(cell)) return;
-
-        int cost = GetCurrentCost();
-        var resRW = _resourceQuery.GetSingletonRW<ResourceSingleton>();
-        if (resRW.ValueRO.Gold < cost) return;
-        resRW.ValueRW.Gold -= cost;
-
-        if (_mode == BuildMode.Turret)
-        {
-            var queue = _turretQueueQuery.GetSingleton<SpawnTurretQueueSingleton>().Queue;
-            queue.Enqueue(new SpawnTurretCommand { Cell = cell });
-        }
-        else if (_mode == BuildMode.Wall)
-        {
-            var queue = _wallQueueQuery.GetSingleton<SpawnWallQueueSingleton>().Queue;
-            queue.Enqueue(new SpawnWallCommand { Cell = cell });
-        }
-    }
-
-    private int GetCurrentCost()
-    {
-        return _mode switch
-        {
-            BuildMode.Turret => _turretCfgQuery.GetSingleton<TurretSpawnConfigSingleton>().Cost,
-            BuildMode.Wall => _wallCfgQuery.GetSingleton<WallSpawnConfigSingleton>().Cost,
-            _ => 0
-        };
+        var queue = _queueQuery.GetSingleton<SpawnBuildQueueSingleton>().Queue;
+        queue.Enqueue(new BuildCommand { Cell = cell, Kind = CurrentKind() });
     }
 }

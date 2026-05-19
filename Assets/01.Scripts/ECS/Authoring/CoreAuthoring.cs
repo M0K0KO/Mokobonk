@@ -43,6 +43,8 @@ public class CoreAuthoring : MonoBehaviour
             AddBlobAsset(ref collider, out _);
             AddComponent(entity, new PhysicsCollider { Value = collider });
             AddSharedComponent(entity, new PhysicsWorldIndex { Value = 0 });
+
+            AddComponent(entity, new InfluenceProvider { Radius = 10f });
         }
     }
 }

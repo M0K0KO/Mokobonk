@@ -29,7 +29,7 @@ public class WaveConfigAuthoring : MonoBehaviour
             AddComponent(entity, new WaveStateSingleton
             {
                 CurrentWave = 0,
-                AliveEnemies = 0,
+                RemainingEnemies = 0,
                 NextWaveTime = 0f,
                 Phase = WavePhase.Preparing
             });

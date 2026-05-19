@@ -10,8 +10,8 @@ public enum WavePhase : byte
 
 public struct WaveStateSingleton : IComponentData
 {
-    public int CurrentWave;
-    public int AliveEnemies;
-    public float NextWaveTime;
     public WavePhase Phase;
+    public int CurrentWave;
+    public float NextWaveTime;
+    public int RemainingEnemies;
 }
