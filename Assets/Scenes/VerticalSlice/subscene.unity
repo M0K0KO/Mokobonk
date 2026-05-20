@@ -335,6 +335,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &417777866
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 417777867}
+  - component: {fileID: 417777868}
+  m_Layer: 0
+  m_Name: EnemyRegistry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &417777867
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417777866}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &417777868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417777866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fda226624f7a86649b52ce0e7cba0a76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Entries:
+  - Kind: 2
+    Prefab: {fileID: 6673214251994518394, guid: 167d95ee29b7b314997825fcda6ace13, type: 3}
+    SpawnWeight: 5
+  - Kind: 1
+    Prefab: {fileID: 6673214251994518394, guid: 0e930e7a8fef6164aa6a83a39ffe2de9, type: 3}
+    SpawnWeight: 200
 --- !u!1 &492740802
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,13 +691,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Entries:
-  - Kind: 2
+  - Kind: 3
     Prefab: {fileID: 5024640195925586572, guid: f21091d9c91d1f94fa2895248cc934d6, type: 3}
     Cost: 5
     BlocksMovement: 1
   - Kind: 1
     Prefab: {fileID: 5042712361935188230, guid: 2237aa0c140108a4ab0584b969342fdc, type: 3}
     Cost: 50
+    BlocksMovement: 1
+  - Kind: 2
+    Prefab: {fileID: 5042712361935188230, guid: 84bf50a809a77a5429e70b1e80ba8f19, type: 3}
+    Cost: 100
     BlocksMovement: 1
 --- !u!1001 &813866323
 PrefabInstance:
@@ -905,7 +960,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1881931947f9f134f8413ae27a10b905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EnemyPrefab: {fileID: 6673214251994518394, guid: 0e930e7a8fef6164aa6a83a39ffe2de9, type: 3}
   SpawnInterval: 0.01
 --- !u!1001 &2048613286
 PrefabInstance:
@@ -1029,3 +1083,4 @@ SceneRoots:
   - {fileID: 813866323}
   - {fileID: 2048613286}
   - {fileID: 794319263}
+  - {fileID: 417777867}

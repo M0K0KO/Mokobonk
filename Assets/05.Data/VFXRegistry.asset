@@ -17,11 +17,24 @@ MonoBehaviour:
     Type: 0
     Prefab: {fileID: 793800818126856912, guid: 99686a5376b9e0344a0d33d8798d5fc0, type: 3}
     PrewarmCount: 20
+    Lifetime: 0.15
   - Id: 2
     Type: 1
     Prefab: {fileID: 1221789951638428816, guid: c9d232a265bdc604e866bfc656ae259b, type: 3}
     PrewarmCount: 20
+    Lifetime: 0.08
   - Id: 3
     Type: 0
     Prefab: {fileID: 2818809909123234291, guid: cd647132a9e6f6e41b9aa80c697248a8, type: 3}
     PrewarmCount: 20
+    Lifetime: 0.25
+  - Id: 4
+    Type: 0
+    Prefab: {fileID: 4124775738041080689, guid: 4a0833fb8fa9818498cde646ef037e2f, type: 3}
+    PrewarmCount: 10
+    Lifetime: 1
+  - Id: 5
+    Type: 0
+    Prefab: {fileID: 1405116446760944943, guid: 3a0e4a235f764b14b98675c5a32066c0, type: 3}
+    PrewarmCount: 10
+    Lifetime: 0.3

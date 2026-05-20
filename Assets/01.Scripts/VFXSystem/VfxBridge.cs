@@ -13,8 +13,10 @@ public sealed class VfxBridge : MonoBehaviour
 
     private VfxPool _pool;
     private EntityManager _entityManager;
-    private EntityQuery _eventQuery;
-    private readonly Queue<HitscanFiredEvent> _queue = new(512);
+    private EntityQuery _hitScanQuery, _explosionQuery;
+
+    private readonly Queue<HitscanFiredEvent> _hitscanQueue = new(512);
+    private readonly Queue<ExplosionFiredEvent> _explosionQueue = new(512);
 
     private void Start()
     {
@@ -26,82 +28,111 @@ public sealed class VfxBridge : MonoBehaviour
 
         var world = World.DefaultGameObjectInjectionWorld;
         _entityManager = world.EntityManager;
-        _eventQuery = _entityManager.CreateEntityQuery(typeof(HitscanFiredEvent));
+        _hitScanQuery = _entityManager.CreateEntityQuery(typeof(HitscanFiredEvent));
+        _explosionQuery = _entityManager.CreateEntityQuery(typeof(ExplosionFiredEvent));
     }
 
     private void Update()
     {
-        CollectEvents();
+        CollectHitscanEvents();
+        CollectExplosionEvents();
         DispatchEvents();
     }
 
-    private void CollectEvents()
+    private void CollectHitscanEvents()
     {
-        if (_eventQuery.IsEmpty) return;
+        if (_hitScanQuery.IsEmpty) return;
+        var events = _hitScanQuery.ToComponentDataArray<HitscanFiredEvent>(Unity.Collections.Allocator.Temp);
 
-        var events = _eventQuery.ToComponentDataArray<HitscanFiredEvent>(Unity.Collections.Allocator.Temp);
-        var entities = _eventQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
+        int spaceLeft = _maxQueueSize - _hitscanQueue.Count;
+        int toCopy = Mathf.Min(events.Length, spaceLeft);
+        for (int i = 0; i < toCopy; i++)
+            _hitscanQueue.Enqueue(events[i]);
 
-        for (int i = 0; i < events.Length; i++)
-        {
-            if (_queue.Count >= _maxQueueSize) break;
-            _queue.Enqueue(events[i]);
-        }
-
-        _entityManager.DestroyEntity(_eventQuery);
-
+        _entityManager.DestroyEntity(_hitScanQuery);
         events.Dispose();
-        entities.Dispose();
+    }
+
+    private void CollectExplosionEvents()
+    {
+        if (_explosionQuery.IsEmpty) return;
+        var events = _explosionQuery.ToComponentDataArray<ExplosionFiredEvent>(Unity.Collections.Allocator.Temp);
+
+        int spaceLeft = _maxQueueSize - _explosionQueue.Count;
+        int toCopy = Mathf.Min(events.Length, spaceLeft);
+        for (int i = 0; i < toCopy; i++)
+            _explosionQueue.Enqueue(events[i]);
+
+        _entityManager.DestroyEntity(_explosionQuery);
+        events.Dispose();
     }
 
     private void DispatchEvents()
     {
         float now = (float)World.DefaultGameObjectInjectionWorld.Time.ElapsedTime;
-
         int processed = 0;
         
-        while (_queue.Count > 0 && processed < _maxEventsPerFrame)
+        while (_hitscanQueue.Count > 0 && processed < _maxEventsPerFrame)
         {
-            var evt = _queue.Dequeue();
-
+            var evt = _hitscanQueue.Dequeue();
             if (now - evt.SpawnTime > _maxEventAge) continue;
-
             Play(evt);
+            processed++;
+        }
+
+        while (_explosionQueue.Count > 0 && processed < _maxEventsPerFrame)
+        {
+            var evt = _explosionQueue.Dequeue();
+            if (now - evt.SpawnTime > _maxEventAge) continue;
             Play(evt);
             processed++;
         }
     }
+
     private void Play(in HitscanFiredEvent evt)
     {
         if (evt.MuzzleId != VfxId.None)
         {
+            var entry = _registry.Get(evt.MuzzleId);
             var inst = _pool.Rent(evt.MuzzleId);
             inst.Play(new VfxPlayParams
             {
                 Origin = evt.Origin,
-                Lifetime = 0.15f,
+                Lifetime = entry.Lifetime,
             });
         }
-
         if (evt.BeamId != VfxId.None)
         {
+            var entry = _registry.Get(evt.BeamId);
             var inst = _pool.Rent(evt.BeamId);
             inst.Play(new VfxPlayParams
             {
                 Origin = evt.Origin,
                 End = evt.Hit,
-                Lifetime = 0.08f,
+                Lifetime = entry.Lifetime,
             });
         }
-
         if (evt.HitSparkId != VfxId.None)
         {
+            var entry = _registry.Get(evt.HitSparkId);
             var inst = _pool.Rent(evt.HitSparkId);
             inst.Play(new VfxPlayParams
             {
                 Origin = evt.Hit,
-                Lifetime = 0.25f,
+                Lifetime = entry.Lifetime,
             });
         }
+    }
+
+    private void Play(in ExplosionFiredEvent evt)
+    {
+        if (evt.VfxId == VfxId.None) return;
+        var entry = _registry.Get(evt.VfxId);
+        var inst = _pool.Rent(evt.VfxId);
+        inst.Play(new VfxPlayParams
+        {
+            Origin = evt.Position,
+            Lifetime = entry.Lifetime,
+        });
     }
 }

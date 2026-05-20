@@ -9,6 +9,7 @@ public class InputManager : MonoBehaviour
 
     public Vector2 MoveInput { get; private set; }
     public bool TurretBuildModeInput { get; private set; }
+    public bool MortarBuildModeINput { get; private set; }
     public bool WallBuildModeInput { get; private set; }
 
     private void Awake()
@@ -27,6 +28,7 @@ public class InputManager : MonoBehaviour
         _playerInput.Gameplay.Move.canceled += OnMove;
 
         _playerInput.Gameplay.TurretBuildMode.performed += OnTurretBuildModeChangeInput;
+        _playerInput.Gameplay.MortarBuildMode.performed += OnMortarBuildModeChangeInput;
         _playerInput.Gameplay.WallBuildMode.performed += OnWallBuildModeChangeInput;
     }
 
@@ -36,6 +38,7 @@ public class InputManager : MonoBehaviour
         _playerInput.Gameplay.Move.canceled -= OnMove;
 
         _playerInput.Gameplay.TurretBuildMode.performed -= OnTurretBuildModeChangeInput;
+        _playerInput.Gameplay.MortarBuildMode.performed -= OnMortarBuildModeChangeInput;
         _playerInput.Gameplay.WallBuildMode.performed -= OnWallBuildModeChangeInput;
 
         _playerInput.Disable();
@@ -50,6 +53,11 @@ public class InputManager : MonoBehaviour
         TurretBuildModeInput = true;
     }
 
+    private void OnMortarBuildModeChangeInput(InputAction.CallbackContext ctx)
+    {
+        MortarBuildModeINput = true;
+    }
+
     private void OnWallBuildModeChangeInput(InputAction.CallbackContext ctx)
     {
         WallBuildModeInput = true;
@@ -60,6 +68,19 @@ public class InputManager : MonoBehaviour
         if (TurretBuildModeInput)
         {
             TurretBuildModeInput = false;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TryConsumeMortarBuildModeInput()
+    {
+        if (MortarBuildModeINput)
+        {
+            MortarBuildModeINput = false;
             return true;
         }
         else

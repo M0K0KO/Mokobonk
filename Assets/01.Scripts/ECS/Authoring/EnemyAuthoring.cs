@@ -6,6 +6,7 @@ using UnityEngine;
 public class EnemyAuthoring : MonoBehaviour
 {
     [Header("Enemy Properties")]
+    [SerializeField] private EnemyKind Kind = EnemyKind.Runner;
     [SerializeField] private float maxHealth;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
@@ -22,6 +23,7 @@ public class EnemyAuthoring : MonoBehaviour
             Entity entity = GetEntity(TransformUsageFlags.Dynamic);
 
             AddComponent(entity, new EnemyTag { });
+            AddComponent(entity, new EnemyKindComponent { Value = authoring.Kind });
             AddComponent(entity, new Health { Max = authoring.maxHealth, Current = authoring.maxHealth});
             AddComponent(entity, new MoveSpeed { Speed = authoring.moveSpeed });
             AddComponent(entity, new RotateSpeed { Speed = authoring.rotateSpeed });

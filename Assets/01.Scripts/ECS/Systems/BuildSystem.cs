@@ -39,7 +39,13 @@ public partial struct BuildSystem : ISystem
 
             var built = em.Instantiate(info.Prefab);
             float3 pos = GridUtility.CellToWorld(cmd.Cell, grid.Origin, grid.CellSize);
-            em.SetComponentData(built, LocalTransform.FromPosition(pos));
+            var existingTransform = em.GetComponentData<LocalTransform>(built);
+            em.SetComponentData(built, new LocalTransform
+            {
+                Position = pos,
+                Rotation = existingTransform.Rotation,
+                Scale = existingTransform.Scale,
+            });
 
             em.AddComponentData(built, new BuildGridCell { Value = cmd.Cell });
 

@@ -10,6 +10,7 @@ public class VfxRegistry : ScriptableObject
         public VfxType Type;
         public GameObject Prefab;
         public int PrewarmCount;
+        public float Lifetime;
     }
 
     public Entry[] Entries;

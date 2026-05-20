@@ -118,6 +118,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MortarBuildMode"",
+                    ""type"": ""Button"",
+                    ""id"": ""2c179a34-a7ac-437e-9b94-0fb7444f022b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -197,6 +206,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""WallBuildMode"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""956b6133-79f7-4103-8466-812b215a563e"",
+                    ""path"": ""<Keyboard>/m"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MortarBuildMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -208,6 +228,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Gameplay_Move = m_Gameplay.FindAction("Move", throwIfNotFound: true);
         m_Gameplay_TurretBuildMode = m_Gameplay.FindAction("TurretBuildMode", throwIfNotFound: true);
         m_Gameplay_WallBuildMode = m_Gameplay.FindAction("WallBuildMode", throwIfNotFound: true);
+        m_Gameplay_MortarBuildMode = m_Gameplay.FindAction("MortarBuildMode", throwIfNotFound: true);
     }
 
     ~@PlayerInput()
@@ -291,6 +312,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Move;
     private readonly InputAction m_Gameplay_TurretBuildMode;
     private readonly InputAction m_Gameplay_WallBuildMode;
+    private readonly InputAction m_Gameplay_MortarBuildMode;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -314,6 +336,10 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/WallBuildMode".
         /// </summary>
         public InputAction @WallBuildMode => m_Wrapper.m_Gameplay_WallBuildMode;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/MortarBuildMode".
+        /// </summary>
+        public InputAction @MortarBuildMode => m_Wrapper.m_Gameplay_MortarBuildMode;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -349,6 +375,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @WallBuildMode.started += instance.OnWallBuildMode;
             @WallBuildMode.performed += instance.OnWallBuildMode;
             @WallBuildMode.canceled += instance.OnWallBuildMode;
+            @MortarBuildMode.started += instance.OnMortarBuildMode;
+            @MortarBuildMode.performed += instance.OnMortarBuildMode;
+            @MortarBuildMode.canceled += instance.OnMortarBuildMode;
         }
 
         /// <summary>
@@ -369,6 +398,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @WallBuildMode.started -= instance.OnWallBuildMode;
             @WallBuildMode.performed -= instance.OnWallBuildMode;
             @WallBuildMode.canceled -= instance.OnWallBuildMode;
+            @MortarBuildMode.started -= instance.OnMortarBuildMode;
+            @MortarBuildMode.performed -= instance.OnMortarBuildMode;
+            @MortarBuildMode.canceled -= instance.OnMortarBuildMode;
         }
 
         /// <summary>
@@ -430,5 +462,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnWallBuildMode(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "MortarBuildMode" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnMortarBuildMode(InputAction.CallbackContext context);
     }
 }

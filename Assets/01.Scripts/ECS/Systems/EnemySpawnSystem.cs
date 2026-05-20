@@ -1,8 +1,6 @@
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics;
-using Unity.Rendering;
 using Unity.Transforms;
 
 [BurstCompile]
@@ -16,6 +14,7 @@ partial struct EnemySpawnSystem : ISystem
     {
         state.RequireForUpdate<EnemySpawnConfigSingleton>();
         state.RequireForUpdate<GridConfigSingleton>();
+        state.RequireForUpdate<EnemyRegistrySingleton>();
         _rng = new Random(0x9E3779B9u);
     }
 
@@ -33,6 +32,10 @@ partial struct EnemySpawnSystem : ISystem
         cfg.RemainingToSpawn--;
 
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
+        var registry = SystemAPI.GetSingleton<EnemyRegistrySingleton>();
+
+        Entity prefab = PickRandomEnemyPrefab(ref _rng, registry);
+
         int side = _rng.NextInt(0, 4);
         int2 cell = PickCellOnSide(side, grid.GridSize, ref _rng);
         float3 spawnPos = GridUtility.CellToWorld(cell, grid.Origin, grid.CellSize);
@@ -40,13 +43,14 @@ partial struct EnemySpawnSystem : ISystem
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                             .CreateCommandBuffer(state.WorldUnmanaged);
 
-        var enemy = ecb.Instantiate(cfg.EnemyPrefab);
-        ecb.SetComponent(enemy, LocalTransform.FromPosition(spawnPos));
+        var enemy = ecb.Instantiate(prefab);
+        var prefabTransform = SystemAPI.GetComponent<LocalTransform>(prefab);
+        prefabTransform.Position = spawnPos;
+        ecb.SetComponent(enemy, prefabTransform);
 
-        var vatAsset = SystemAPI.GetComponent<VATAsset>(cfg.EnemyPrefab);
+        var vatAsset = SystemAPI.GetComponent<VATAsset>(prefab);
         float walkDuration = vatAsset.Blob.Value.Clips[0].Duration;
         float randomOffset = _rng.NextFloat(0f, walkDuration);
-
         ecb.SetComponent(enemy, new VATAnimationState
         {
             CurrentClipIndex = 0,
@@ -59,6 +63,24 @@ partial struct EnemySpawnSystem : ISystem
     {
         
     }
+
+    private static Entity PickRandomEnemyPrefab(ref Random rng, in EnemyRegistrySingleton registry)
+    {
+        float roll = rng.NextFloat(0f, registry.TotalWeight);
+        float acc = 0f;
+
+        for (byte k = 1; k < 255; k++)
+        {
+            if (registry.Map.TryGetValue(k, out var info))
+            {
+                acc += info.SpawnWeight;
+                if (roll <= acc) return info.Prefab;
+            }
+        }
+
+        return Entity.Null;
+    }
+
     private static int2 PickCellOnSide(int side, int2 size, ref Random rng)
     {
         return side switch

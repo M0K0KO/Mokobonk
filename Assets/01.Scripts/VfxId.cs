@@ -4,10 +4,13 @@ public enum VfxId : ushort
     GunnerMuzzle = 1,
     GunnerBeam = 2,
     GunnerHitSpark = 3,
+    MortarPredictionMarker = 4,
+    MortarExplosion = 5,
 }
 
 public enum VfxType : byte
 {
     Point,   // ParticleSystem
     Beam,    // LineRenderer
+    Marker,  // Position + Radius + Lifetime
 }

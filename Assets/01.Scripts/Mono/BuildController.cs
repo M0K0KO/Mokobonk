@@ -5,6 +5,7 @@ using UnityEngine;
 public class BuildController : MonoBehaviour
 {
     [SerializeField] private GameObject turretGhostPrefab;
+    [SerializeField] private GameObject mortarGhostPrefab;
     [SerializeField] private GameObject wallGhostPrefab;
     [SerializeField] private Material ghostValidMat;
     [SerializeField] private Material ghostInvalidMat;
@@ -20,7 +21,7 @@ public class BuildController : MonoBehaviour
     private GameObject _ghostInstance;
     private MeshRenderer _ghostRenderer;
 
-    private enum BuildMode { Idle, Turret, Wall }
+    private enum BuildMode { Idle, Turret, Mortar, Wall }
 
     void Start()
     {
@@ -57,6 +58,7 @@ public class BuildController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape)) { Exit(); return; }
         if (_inputManager.TryConsumeTurretBuildModeInput()) Toggle(BuildMode.Turret);
         if (_inputManager.TryConsumeWallBuildModeInput()) Toggle(BuildMode.Wall);
+        if (_inputManager.TryConsumeMortarBuildModeInput()) Toggle(BuildMode.Mortar);
     }
 
     private void Toggle(BuildMode target)
@@ -64,7 +66,14 @@ public class BuildController : MonoBehaviour
         if (_mode == target) { Exit(); return; }
         Exit();
         _mode = target;
-        SpawnGhost(target == BuildMode.Turret ? turretGhostPrefab : wallGhostPrefab);
+        var ghost = target switch
+        {
+            BuildMode.Turret => turretGhostPrefab,
+            BuildMode.Mortar => mortarGhostPrefab,
+            BuildMode.Wall => wallGhostPrefab,
+            _ => null,
+        };
+        SpawnGhost(ghost);
     }
 
     private void Exit()
@@ -101,6 +110,7 @@ public class BuildController : MonoBehaviour
     private BuildableKind CurrentKind() => _mode switch
     {
         BuildMode.Turret => BuildableKind.Turret_Gunner,
+        BuildMode.Mortar => BuildableKind.Turret_Mortar,
         BuildMode.Wall => BuildableKind.Wall,
         _ => BuildableKind.None,
     };

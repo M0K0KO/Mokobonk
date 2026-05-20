@@ -126,6 +126,7 @@ public partial struct TurretFireJob : IJobEntity
             SpawnTime = ElapsedTime,
         });
 
+
         stats.Cooldown = 1f / stats.FireRate;
     }
 }

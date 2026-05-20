@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.5, z: 0}
-  m_LocalScale: {x: 1, y: 2, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -47,9 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Range: 12
-  FireRate: 10
-  Damage: 6
-  ProjectileSpeed: 50
+  FireRate: 3
+  Damage: 10
   ProjectilePrefab: {fileID: 9165703474325065379, guid: 7c9af2d13e640934881e5fc23b09f36b, type: 3}
 --- !u!23 &1671903107189027261
 MeshRenderer:
@@ -74,7 +73,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 37992b59821dbbc42a9ba5ec35203577, type: 2}
+  - {fileID: -5682177726514902387, guid: dd53dca85bc5e63408f277e3e9e5ac7f, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -103,4 +102,4 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5042712361935188230}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: -2536733481753887828, guid: 94f2bbeada2cd7b48bc198fddb638f6b, type: 3}

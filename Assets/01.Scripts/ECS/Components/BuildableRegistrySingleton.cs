@@ -5,7 +5,8 @@ public enum BuildableKind : byte
 {
     None = 0,
     Turret_Gunner = 1,
-    Wall = 2,
+    Turret_Mortar = 2,
+    Wall = 3,
 }
 
 public struct BuildableInfo
