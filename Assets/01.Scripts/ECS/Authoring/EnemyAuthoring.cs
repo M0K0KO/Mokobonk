@@ -12,6 +12,11 @@ public class EnemyAuthoring : MonoBehaviour
     [SerializeField] private float rotateSpeed;
     [SerializeField] private float contactDamage;
 
+    [Header("Attack")]
+    [SerializeField] private float attackDamage = 5f;
+    [SerializeField] private float attackInterval = 1.0f;
+    [SerializeField] private float attackRange = 1.2f;
+
     [Header("Collider")]
     [SerializeField] private float capsuleRadius = 0.25f;
     [SerializeField] private float capsuleHeight = 1.0f;
@@ -25,6 +30,13 @@ public class EnemyAuthoring : MonoBehaviour
             AddComponent(entity, new EnemyTag { });
             AddComponent(entity, new EnemyKindComponent { Value = authoring.Kind });
             AddComponent(entity, new Health { Max = authoring.maxHealth, Current = authoring.maxHealth});
+            AddComponent(entity, new EnemyAttackStats
+            {
+                Damage = authoring.attackDamage,
+                Interval = authoring.attackInterval,
+                Range = authoring.attackRange,
+                Cooldown = 0f,
+            });
             AddComponent(entity, new MoveSpeed { Speed = authoring.moveSpeed });
             AddComponent(entity, new RotateSpeed { Speed = authoring.rotateSpeed });
 

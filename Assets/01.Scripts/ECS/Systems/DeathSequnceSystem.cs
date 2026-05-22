@@ -52,7 +52,7 @@ partial struct DeathSequnceSystem : ISystem
 
             ECB.AddComponent(chunkIndex, entity, new DyingTag
             {
-                DespawnTime = Now + DespawnDelay
+                DespawnTime = Now + DespawnDelay,
             });
 
             var evtEntity = ECB.CreateEntity(chunkIndex);

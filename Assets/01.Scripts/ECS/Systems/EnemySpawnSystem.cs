@@ -21,6 +21,7 @@ partial struct EnemySpawnSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var bal = SystemAPI.GetSingleton<BalanceMultiplierSingleton>();
         var spawnRW = SystemAPI.GetSingletonRW<EnemySpawnConfigSingleton>();
         ref var cfg = ref spawnRW.ValueRW;
         if (cfg.RemainingToSpawn <= 0) return;
@@ -28,13 +29,13 @@ partial struct EnemySpawnSystem : ISystem
         float now = (float)SystemAPI.Time.ElapsedTime;
         if (now < cfg.NextSpawnTime) return;
 
-        cfg.NextSpawnTime = now + cfg.SpawnInterval;
+        cfg.NextSpawnTime = now + cfg.SpawnInterval / bal.SpawnRateMul;
         cfg.RemainingToSpawn--;
 
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
         var registry = SystemAPI.GetSingleton<EnemyRegistrySingleton>();
 
-        Entity prefab = PickRandomEnemyPrefab(ref _rng, registry);
+        Entity prefab = PickRandomEnemyPrefab(ref _rng, registry, bal.WalkerRatio);
 
         int side = _rng.NextInt(0, 4);
         int2 cell = PickCellOnSide(side, grid.GridSize, ref _rng);
@@ -47,6 +48,12 @@ partial struct EnemySpawnSystem : ISystem
         var prefabTransform = SystemAPI.GetComponent<LocalTransform>(prefab);
         prefabTransform.Position = spawnPos;
         ecb.SetComponent(enemy, prefabTransform);
+        var prefabHealth = SystemAPI.GetComponent<Health>(prefab);
+        ecb.SetComponent(enemy, new Health
+        {
+            Current = prefabHealth.Max * bal.EnemyHpMul,
+            Max = prefabHealth.Max * bal.EnemyHpMul,
+        });
 
         var vatAsset = SystemAPI.GetComponent<VATAsset>(prefab);
         float walkDuration = vatAsset.Blob.Value.Clips[0].Duration;
@@ -64,20 +71,16 @@ partial struct EnemySpawnSystem : ISystem
         
     }
 
-    private static Entity PickRandomEnemyPrefab(ref Random rng, in EnemyRegistrySingleton registry)
+    private static Entity PickRandomEnemyPrefab(ref Random rng, in EnemyRegistrySingleton registry, float walkerRatio)
     {
-        float roll = rng.NextFloat(0f, registry.TotalWeight);
-        float acc = 0f;
+        float roll = rng.NextFloat(0f, 1f);
 
-        for (byte k = 1; k < 255; k++)
+        if (roll < walkerRatio)
         {
-            if (registry.Map.TryGetValue(k, out var info))
-            {
-                acc += info.SpawnWeight;
-                if (roll <= acc) return info.Prefab;
-            }
+            if (registry.Map.TryGetValue((byte)EnemyKind.Walker, out var w)) return w.Prefab;
         }
 
+        if (registry.Map.TryGetValue((byte)EnemyKind.Runner, out var r)) return r.Prefab;
         return Entity.Null;
     }
 

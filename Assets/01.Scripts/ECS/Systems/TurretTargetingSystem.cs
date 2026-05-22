@@ -25,6 +25,7 @@ public partial struct TurretTargetingSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         var idx = SystemAPI.GetSingleton<SpatialIndexSingleton>();
+        var bal = SystemAPI.GetSingleton<BalanceMultiplierSingleton>();
         var healthLookup = SystemAPI.GetComponentLookup<Health>(false);
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                             .CreateCommandBuffer(state.WorldUnmanaged);
@@ -39,7 +40,10 @@ public partial struct TurretTargetingSystem : ISystem
             SpatialOrigin = idx.Origin,
             SpatialCellSize = idx.CellSize,
             HealthLookup = healthLookup,
-            ECB = ecb.AsParallelWriter()
+            ECB = ecb.AsParallelWriter(),
+            DamageMul = bal.TurretDamageMul,
+            FireRateMul = bal.TurretFireRateMul,
+            RangeMul = bal.TurretRangeMul,
         }.ScheduleParallel(state.Dependency);
     }
 }
@@ -49,6 +53,9 @@ public partial struct TurretFireJob : IJobEntity
 {
     public float DeltaTime;
     public float ElapsedTime;
+    public float DamageMul;
+    public float FireRateMul;
+    public float RangeMul;
 
     [ReadOnly] public NativeParallelMultiHashMap<int2, EnemySpatialEntry> SpatialMap;
 
@@ -68,7 +75,7 @@ public partial struct TurretFireJob : IJobEntity
         int2 centerCell = SpatialIndexUtility.WorldToCell(
             turretTransform.Position, SpatialOrigin, SpatialCellSize);
 
-        int cellRadius = (int)math.ceil(stats.Range / SpatialCellSize);
+        int cellRadius = (int)math.ceil(stats.Range * RangeMul / SpatialCellSize);
 
         float bestDistSq = stats.Range * stats.Range;
         Entity bestEnemy = Entity.Null;
@@ -111,7 +118,7 @@ public partial struct TurretFireJob : IJobEntity
         if (HealthLookup.HasComponent(bestEnemy))
         {
             Health hp = HealthLookup[bestEnemy];
-            hp.Current -= stats.Damage;
+            hp.Current -= stats.Damage * DamageMul;
             HealthLookup[bestEnemy] = hp;
         }
 
@@ -127,6 +134,6 @@ public partial struct TurretFireJob : IJobEntity
         });
 
 
-        stats.Cooldown = 1f / stats.FireRate;
+        stats.Cooldown = 1f / (stats.FireRate * FireRateMul);
     }
 }

@@ -15,6 +15,7 @@ public partial struct DelayedAoESystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         var idx = SystemAPI.GetSingleton<SpatialIndexSingleton>();
+        var bal = SystemAPI.GetSingleton<BalanceMultiplierSingleton>();
         var healthLookup = SystemAPI.GetComponentLookup<Health>(false);
         var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                            .CreateCommandBuffer(state.WorldUnmanaged);
@@ -45,7 +46,7 @@ public partial struct DelayedAoESystem : ISystem
                         if (math.lengthsq(d) <= radiusSq && healthLookup.HasComponent(entry.Entity))
                         {
                             var hp = healthLookup[entry.Entity];
-                            hp.Current -= aoe.ValueRO.Damage;
+                            hp.Current -= aoe.ValueRO.Damage * bal.TurretDamageMul;
                             healthLookup[entry.Entity] = hp;
                         }
                     }

@@ -12,6 +12,7 @@ public class BuildableRegistryAuthoring : MonoBehaviour
         public GameObject Prefab;
         public int Cost;
         public bool BlocksMovement;
+        public float MaxHealth;
     }
 
     public Entry[] Entries;
@@ -31,6 +32,7 @@ public class BuildableRegistryAuthoring : MonoBehaviour
                     Prefab = GetEntity(e.Prefab, TransformUsageFlags.Dynamic),
                     Cost = e.Cost,
                     BlocksMovement = e.BlocksMovement,
+                    MaxHealth = e.MaxHealth,
                 });
             }
         }
@@ -43,4 +45,5 @@ public struct BuildableRegistryEntryBuffer : IBufferElementData
     public Entity Prefab;
     public int Cost;
     public bool BlocksMovement;
+    public float MaxHealth;
 }

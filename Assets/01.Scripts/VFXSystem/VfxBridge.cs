@@ -13,10 +13,11 @@ public sealed class VfxBridge : MonoBehaviour
 
     private VfxPool _pool;
     private EntityManager _entityManager;
-    private EntityQuery _hitScanQuery, _explosionQuery;
+    private EntityQuery _hitScanQuery, _explosionQuery, _buildableDeathQuery;
 
     private readonly Queue<HitscanFiredEvent> _hitscanQueue = new(512);
     private readonly Queue<ExplosionFiredEvent> _explosionQueue = new(512);
+    private readonly Queue<BuildableDeathEvent> _buildableDeathQueue = new(512);
 
     private void Start()
     {
@@ -30,12 +31,14 @@ public sealed class VfxBridge : MonoBehaviour
         _entityManager = world.EntityManager;
         _hitScanQuery = _entityManager.CreateEntityQuery(typeof(HitscanFiredEvent));
         _explosionQuery = _entityManager.CreateEntityQuery(typeof(ExplosionFiredEvent));
+        _buildableDeathQuery = _entityManager.CreateEntityQuery(typeof(BuildableDeathEvent));
     }
 
     private void Update()
     {
         CollectHitscanEvents();
         CollectExplosionEvents();
+        CollectBuildableDeathEvents();
         DispatchEvents();
     }
 
@@ -67,6 +70,20 @@ public sealed class VfxBridge : MonoBehaviour
         events.Dispose();
     }
 
+    private void CollectBuildableDeathEvents()
+    {
+        if (_buildableDeathQuery.IsEmpty) return;
+        var events = _buildableDeathQuery.ToComponentDataArray<BuildableDeathEvent>(Unity.Collections.Allocator.Temp);
+
+        int spaceLeft = _maxQueueSize - _buildableDeathQueue.Count;
+        int toCopy = Mathf.Min(events.Length, spaceLeft);
+        for (int i = 0; i < toCopy; i++)
+            _buildableDeathQueue.Enqueue(events[i]);
+
+        _entityManager.DestroyEntity(_buildableDeathQuery);
+        events.Dispose();
+    }
+
     private void DispatchEvents()
     {
         float now = (float)World.DefaultGameObjectInjectionWorld.Time.ElapsedTime;
@@ -83,6 +100,14 @@ public sealed class VfxBridge : MonoBehaviour
         while (_explosionQueue.Count > 0 && processed < _maxEventsPerFrame)
         {
             var evt = _explosionQueue.Dequeue();
+            if (now - evt.SpawnTime > _maxEventAge) continue;
+            Play(evt);
+            processed++;
+        }
+
+        while (_buildableDeathQueue.Count > 0 && processed < _maxEventsPerFrame)
+        {
+            var evt = _buildableDeathQueue.Dequeue();
             if (now - evt.SpawnTime > _maxEventAge) continue;
             Play(evt);
             processed++;
@@ -127,6 +152,17 @@ public sealed class VfxBridge : MonoBehaviour
     private void Play(in ExplosionFiredEvent evt)
     {
         if (evt.VfxId == VfxId.None) return;
+        var entry = _registry.Get(evt.VfxId);
+        var inst = _pool.Rent(evt.VfxId);
+        inst.Play(new VfxPlayParams
+        {
+            Origin = evt.Position,
+            Lifetime = entry.Lifetime,
+        });
+    }
+
+    private void Play(in BuildableDeathEvent evt)
+    {
         var entry = _registry.Get(evt.VfxId);
         var inst = _pool.Rent(evt.VfxId);
         inst.Play(new VfxPlayParams

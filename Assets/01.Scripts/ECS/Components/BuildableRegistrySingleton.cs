@@ -15,6 +15,7 @@ public struct BuildableInfo
     public Entity Prefab;
     public int Cost;
     public bool BlocksMovement;
+    public float MaxHealth;
 }
 
 public struct BuildableRegistrySingleton : IComponentData

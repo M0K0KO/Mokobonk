@@ -6,6 +6,7 @@ public enum VfxId : ushort
     GunnerHitSpark = 3,
     MortarPredictionMarker = 4,
     MortarExplosion = 5,
+    BuildableDestroyed = 6,
 }
 
 public enum VfxType : byte

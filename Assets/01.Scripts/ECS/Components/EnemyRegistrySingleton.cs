@@ -6,6 +6,10 @@ public struct EnemyInfo
     public EnemyKind Kind;
     public Entity Prefab;
     public float SpawnWeight;
+
+    public float Damage;
+    public float Interval;
+    public float Range;
 }
 
 public struct EnemyRegistryEntryBuffer : IBufferElementData
@@ -13,6 +17,10 @@ public struct EnemyRegistryEntryBuffer : IBufferElementData
     public EnemyKind Kind;
     public Entity Prefab;
     public float SpawnWeight;
+
+    public float Damage;
+    public float Interval;
+    public float Range;
 }
 
 public struct EnemyRegistrySingleton : IComponentData

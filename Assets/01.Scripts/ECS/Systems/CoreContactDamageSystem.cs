@@ -1,65 +1,55 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
+using Unity.Transforms;
 
 [BurstCompile]
-[UpdateInGroup(typeof(PhysicsSystemGroup))]
-[UpdateAfter(typeof(PhysicsSimulationGroup))]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateAfter(typeof(EnemyMovementSystem))]
 partial struct CoreContactDamageSystem : ISystem
 {
+    private const float CoreContactRadius = 1.25f;
+    private const float CoreContactRadiusSq = CoreContactRadius * CoreContactRadius;
+
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.RequireForUpdate<SimulationSingleton>();
         state.RequireForUpdate<CoreDamageQueueSingleton>();
+        state.RequireForUpdate<CorePositionSingleton>();
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
-                                   .CreateCommandBuffer(state.WorldUnmanaged);
-
-        var coreTagLookup = SystemAPI.GetComponentLookup<CoreTag>(true);
-        var enemyTagLookup = SystemAPI.GetComponentLookup<EnemyTag>(true);
-        var healthLookup = SystemAPI.GetComponentLookup<Health>(false);
-        var contactDamageLookup = SystemAPI.GetComponentLookup<ContactDamage>(true);
-
         var queue = SystemAPI.GetSingleton<CoreDamageQueueSingleton>().Queue;
+        float3 corePos = SystemAPI.GetSingleton<CorePositionSingleton>().Value;
 
-        var jobHandle = new CoreContactJob
+        var handle = new CoreContactDamageJob
         {
-            CoreTag = coreTagLookup,
-            EnemyTag = enemyTagLookup,
-            Health = healthLookup,
-            ContactDamage = contactDamageLookup,
-            DamageQueue = queue.AsParallelWriter(),
-            ECB = ecb.AsParallelWriter()
-        }.Schedule(
-                   SystemAPI.GetSingleton<SimulationSingleton>(),
-                   state.Dependency
-               );
+            CorePos = corePos,
+            CoreContactRadiusSq = CoreContactRadiusSq,
+            DamageQueue = queue.AsParallelWriter()
+        }.ScheduleParallel(state.Dependency);
 
-        jobHandle.Complete();
+        handle.Complete();
 
-        if (queue.Count == 0) { state.Dependency = jobHandle; return; }
+        if (queue.Count == 0) return;
 
         float totalDamage = 0f;
         while (queue.TryDequeue(out float dmg))
             totalDamage += dmg;
 
-        foreach (var health in SystemAPI.Query<RefRW<Health>>().WithAll<CoreTag>())
+        foreach (var coreHealth in SystemAPI.Query<RefRW<Health>>().WithAll<CoreTag>())
         {
-            health.ValueRW.Current -= totalDamage;
-            if (health.ValueRO.Current <= 0f)
+            coreHealth.ValueRW.Current -= totalDamage;
+            if (coreHealth.ValueRO.Current <= 0f)
                 SystemAPI.GetSingletonRW<GameStateSingleton>().ValueRW.State = GameState.Lost;
         }
-
-        state.Dependency = jobHandle;
     }
-
+        
     [BurstCompile]
     public void OnDestroy(ref SystemState state)
     {
@@ -69,31 +59,21 @@ partial struct CoreContactDamageSystem : ISystem
 
 
 [BurstCompile]
-public struct CoreContactJob : ITriggerEventsJob
+[WithAll(typeof(EnemyTag))]
+[WithNone(typeof(DyingTag))]
+public partial struct CoreContactDamageJob : IJobEntity
 {
-    [ReadOnly] public ComponentLookup<CoreTag> CoreTag;
-    [ReadOnly] public ComponentLookup<EnemyTag> EnemyTag;
-    public ComponentLookup<Health> Health;
-    [ReadOnly] public ComponentLookup<ContactDamage> ContactDamage;
+    [ReadOnly] public float3 CorePos;
+    [ReadOnly] public float CoreContactRadiusSq;
     public NativeQueue<float>.ParallelWriter DamageQueue;
-    public EntityCommandBuffer.ParallelWriter ECB;
 
-    public void Execute(TriggerEvent triggerEvent)
+    private void Execute(in LocalTransform transform, in ContactDamage contactDamage, ref Health health)
     {
-        var a = triggerEvent.EntityA;
-        var b = triggerEvent.EntityB;
+        float3 delta = transform.Position - CorePos;
+        delta.y = 0f;
+        if (math.lengthsq(delta) > CoreContactRadiusSq) return;
 
-        if (CoreTag.HasComponent(a) && EnemyTag.HasComponent(b)) HandleHit(a, b);
-        else if (CoreTag.HasComponent(b) && EnemyTag.HasComponent(a)) HandleHit(b, a);
-    }
-
-    private void HandleHit(Entity core, Entity enemy)
-    {
-        if (!ContactDamage.HasComponent(enemy)) return;
-
-        float dmg = ContactDamage[enemy].Value;
-        DamageQueue.Enqueue(dmg);
-
-        Health[enemy] = new Health { Current = -1f };
+        DamageQueue.Enqueue(contactDamage.Value);
+        health.Current = -1f;
     }
 }

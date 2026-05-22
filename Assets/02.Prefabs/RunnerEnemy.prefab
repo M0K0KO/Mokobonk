@@ -101,10 +101,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Kind: 1
-  maxHealth: 10
+  maxHealth: 20
   moveSpeed: 3.5
   rotateSpeed: 6
   contactDamage: 5
+  attackDamage: 5
+  attackInterval: 1
+  attackRange: 2
   capsuleRadius: 0.25
   capsuleHeight: 1
 --- !u!114 &2668133026946672088

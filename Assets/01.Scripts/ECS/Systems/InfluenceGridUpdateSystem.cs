@@ -14,6 +14,7 @@ public partial struct InfluenceGridUpdateSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<CoreInfluenceGridSingleton>();
+        state.RequireForUpdate<GridConfigSingleton>();
         _providerQuery = state.GetEntityQuery(
             ComponentType.ReadOnly<InfluenceProvider>(),
             ComponentType.ReadOnly<LocalTransform>());

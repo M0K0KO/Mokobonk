@@ -17,6 +17,7 @@ public partial struct MortarTargetingSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         var idx = SystemAPI.GetSingleton<SpatialIndexSingleton>();
+        var bal = SystemAPI.GetSingleton<BalanceMultiplierSingleton>();
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                             .CreateCommandBuffer(state.WorldUnmanaged);
 
@@ -31,7 +32,10 @@ public partial struct MortarTargetingSystem : ISystem
             SpatialMap = idx.Map,
             SpatialOrigin = idx.Origin,
             SpatialCellSize = idx.CellSize,
-            ECB = ecb.AsParallelWriter()
+            ECB = ecb.AsParallelWriter(),
+            DamageMul = bal.TurretDamageMul,
+            FireRateMul = bal.TurretFireRateMul,
+            RangeMul = bal.TurretRangeMul,
         }.ScheduleParallel(state.Dependency);
     }
 }
@@ -41,6 +45,9 @@ public partial struct MortarFireJob : IJobEntity
 {
     public float DeltaTime;
     public float ElapsedTime;
+    public float DamageMul;
+    public float FireRateMul;
+    public float RangeMul;
     [ReadOnly] public NativeParallelMultiHashMap<int2, EnemySpatialEntry> SpatialMap;
     public float3 SpatialOrigin;
     public float SpatialCellSize;
@@ -58,7 +65,7 @@ public partial struct MortarFireJob : IJobEntity
         int2 centerCell = SpatialIndexUtility.WorldToCell(
             turretTransform.Position, SpatialOrigin, SpatialCellSize);
 
-        int cellRadius = (int)math.ceil(stats.Range / SpatialCellSize);
+        int cellRadius = (int)math.ceil(stats.Range * RangeMul / SpatialCellSize);
 
         float bestDistSq = stats.Range * stats.Range;
         float3 bestPos = float3.zero;
@@ -95,7 +102,7 @@ public partial struct MortarFireJob : IJobEntity
         {
             Position = bestPos,
             Radius = stats.AoERadius,
-            Damage = stats.Damage,
+            Damage = stats.Damage * DamageMul,
             ExplodeTime = ElapsedTime + stats.ExplodeDelay,
         });
 
@@ -108,6 +115,6 @@ public partial struct MortarFireJob : IJobEntity
             SpawnTime = ElapsedTime,
         });
 
-        stats.Cooldown = 1f / stats.FireRate;
+        stats.Cooldown = 1f / (stats.FireRate * FireRateMul);
     }
 }

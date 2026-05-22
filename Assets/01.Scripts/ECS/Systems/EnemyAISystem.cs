@@ -31,6 +31,7 @@ partial struct EnemyMovementSystem : ISystem
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
         var corePos = SystemAPI.GetSingleton<CorePositionSingleton>().Value;
         var spatial = SystemAPI.GetSingleton<SpatialIndexSingleton>();
+        var bal = SystemAPI.GetSingleton<BalanceMultiplierSingleton>();
 
         new ChaseCoreJob
         {
@@ -45,6 +46,8 @@ partial struct EnemyMovementSystem : ISystem
             SpatialMap = spatial.Map,
             SpatialOrigin = spatial.Origin,
             SpatialCell = spatial.CellSize,
+
+            SpeedMul = bal.EnemySpeedMul,
 
             DeltaTime = SystemAPI.Time.DeltaTime
         }.ScheduleParallel();
@@ -69,6 +72,7 @@ public partial struct ChaseCoreJob : IJobEntity
     public float CellSize;
     public int2 GridSize;
     public float3 CorePos;
+    public float SpeedMul;
 
     [ReadOnly] public NativeParallelMultiHashMap<int2, EnemySpatialEntry> SpatialMap;
     public float3 SpatialOrigin;
@@ -89,6 +93,8 @@ public partial struct ChaseCoreJob : IJobEntity
         ref PhysicsVelocity velocity, 
         in EnemyTag _)
     {
+        var effectiveSpeed = moveSpeed.Speed * SpeedMul;
+
         int2 cell = GridUtility.WorldToCell(transform.Position, GridOrigin, CellSize);
         float3 flowDir = float3.zero;
 
@@ -144,9 +150,9 @@ public partial struct ChaseCoreJob : IJobEntity
         }
 
         float3 targetVel = new float3(
-            desiredDir.x * moveSpeed.Speed,
+            desiredDir.x * effectiveSpeed,
             0f,
-            desiredDir.z * moveSpeed.Speed
+            desiredDir.z * effectiveSpeed
         );
 
         velocity.Linear = math.lerp(

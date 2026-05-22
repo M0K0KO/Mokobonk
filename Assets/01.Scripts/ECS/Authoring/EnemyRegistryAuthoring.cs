@@ -9,6 +9,10 @@ public class EnemyRegistryAuthoring : MonoBehaviour
         public EnemyKind Kind;
         public GameObject Prefab;
         public float SpawnWeight;
+
+        public float Damage;
+        public float Interval;
+        public float Range;
     }
 
     public Entry[] Entries;
@@ -27,6 +31,10 @@ public class EnemyRegistryAuthoring : MonoBehaviour
                     Kind = e.Kind,
                     Prefab = GetEntity(e.Prefab, TransformUsageFlags.Dynamic),
                     SpawnWeight = e.SpawnWeight,
+
+                    Damage = e.Damage,
+                    Interval = e.Interval,
+                    Range = e.Range,
                 });
             }
         }

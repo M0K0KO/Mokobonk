@@ -48,6 +48,11 @@ public partial struct BuildSystem : ISystem
             });
 
             em.AddComponentData(built, new BuildGridCell { Value = cmd.Cell });
+            em.AddComponentData(built, new BuildableHealth
+            {
+                Current = info.MaxHealth,
+                Max = info.MaxHealth
+            });
 
             occupancy.TryAdd(cmd.Cell, built);
 

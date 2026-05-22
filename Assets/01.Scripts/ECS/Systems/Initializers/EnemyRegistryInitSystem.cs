@@ -35,6 +35,10 @@ public partial struct EnemyRegistryInitSystem : ISystem
                 Kind = e.Kind,
                 Prefab = e.Prefab,
                 SpawnWeight = e.SpawnWeight,
+
+                Damage = e.Damage,
+                Interval = e.Interval,
+                Range = e.Range,
             });
             total += e.SpawnWeight;
         }

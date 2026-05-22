@@ -36,6 +36,7 @@ public partial struct BuildableRegistryInitSystem : ISystem
                 Prefab = e.Prefab,
                 Cost = e.Cost,
                 BlocksMovement = e.BlocksMovement,
+                MaxHealth = e.MaxHealth,
             });
         }
         entries.Dispose();

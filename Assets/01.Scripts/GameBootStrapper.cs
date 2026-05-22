@@ -53,6 +53,19 @@ public class GameBootStrapper : MonoBehaviour
             Cells = new NativeHashSet<int2>(256, Allocator.Persistent),
         });
 
+        var balanceEntity = _entityManager.CreateEntity();
+        _entityManager.AddComponentData(balanceEntity, new BalanceMultiplierSingleton
+        {
+            EnemyHpMul = 1f,
+            EnemySpeedMul = 1f,
+            EnemyDamageMul = 1f,
+            SpawnRateMul = 1f,
+            WalkerRatio = 0.2f,
+            TurretDamageMul = 1f,
+            TurretFireRateMul = 1f,
+            TurretRangeMul = 1f,
+        });
+
         _occupancyMap = new NativeHashMap<int2, Entity>(256, Allocator.Persistent);
 
         _entityManager.CreateSingleton(new GridOccupancySingleton { Map = _occupancyMap });
