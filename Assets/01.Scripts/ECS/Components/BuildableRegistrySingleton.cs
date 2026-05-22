@@ -1,5 +1,6 @@
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 
 public enum BuildableKind : byte
 {
@@ -16,6 +17,7 @@ public struct BuildableInfo
     public int Cost;
     public bool BlocksMovement;
     public float MaxHealth;
+    public int2 Size;
 }
 
 public struct BuildableRegistrySingleton : IComponentData

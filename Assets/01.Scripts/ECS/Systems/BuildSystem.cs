@@ -25,20 +25,22 @@ public partial struct BuildSystem : ISystem
         var occupancy = SystemAPI.GetSingleton<GridOccupancySingleton>().Map;
         var grid = SystemAPI.GetSingleton<GridConfigSingleton>();
         var resRW = SystemAPI.GetSingletonRW<ResourceSingleton>();
-        var em = state.EntityManager;
 
+        var em = state.EntityManager;
         bool anyBlockingBuilt = false;
 
         while (queue.TryDequeue(out var cmd))
         {
             if (!registry.TryGet(cmd.Kind, out var info)) continue;
-            if (!GridUtility.IsInBounds(cmd.Cell, grid.GridSize)) continue;
-            if (occupancy.ContainsKey(cmd.Cell)) continue;
+            if (!GridUtility.AreAllCellsFree(cmd.Cell, info.Size, grid.GridSize, occupancy))
+                continue;
+
             if (resRW.ValueRO.Gold < info.Cost) continue;
             resRW.ValueRW.Gold -= info.Cost;
 
             var built = em.Instantiate(info.Prefab);
-            float3 pos = GridUtility.CellToWorld(cmd.Cell, grid.Origin, grid.CellSize);
+
+            float3 pos = GridUtility.FootprintCenterWorld(cmd.Cell, info.Size, grid.Origin, grid.CellSize);
             var existingTransform = em.GetComponentData<LocalTransform>(built);
             em.SetComponentData(built, new LocalTransform
             {
@@ -47,14 +49,21 @@ public partial struct BuildSystem : ISystem
                 Scale = existingTransform.Scale,
             });
 
-            em.AddComponentData(built, new BuildGridCell { Value = cmd.Cell });
+            em.SetComponentData(built, new BuildableFootprint { Anchor = cmd.Cell, Size = info.Size });
             em.AddComponentData(built, new BuildableHealth
             {
                 Current = info.MaxHealth,
                 Max = info.MaxHealth
             });
 
-            occupancy.TryAdd(cmd.Cell, built);
+            for (int dy = 0; dy < info.Size.y; dy++)
+            {
+                for (int dx = 0; dx < info.Size.x; dx++)
+                {
+                    int2 cell = new int2(cmd.Cell.x + dx, cmd.Cell.y + dy);
+                    occupancy.TryAdd(cell, built);
+                }
+            }
 
             if (info.BlocksMovement) anyBlockingBuilt = true;
         }

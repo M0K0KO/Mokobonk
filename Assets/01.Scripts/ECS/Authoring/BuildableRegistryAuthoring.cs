@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class BuildableRegistryAuthoring : MonoBehaviour
@@ -13,6 +12,7 @@ public class BuildableRegistryAuthoring : MonoBehaviour
         public int Cost;
         public bool BlocksMovement;
         public float MaxHealth;
+        public int2 Size;
     }
 
     public Entry[] Entries;
@@ -33,6 +33,7 @@ public class BuildableRegistryAuthoring : MonoBehaviour
                     Cost = e.Cost,
                     BlocksMovement = e.BlocksMovement,
                     MaxHealth = e.MaxHealth,
+                    Size = e.Size
                 });
             }
         }
@@ -46,4 +47,5 @@ public struct BuildableRegistryEntryBuffer : IBufferElementData
     public int Cost;
     public bool BlocksMovement;
     public float MaxHealth;
+    public int2 Size;
 }

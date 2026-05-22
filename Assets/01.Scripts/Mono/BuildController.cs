@@ -121,25 +121,42 @@ public class BuildController : MonoBehaviour
         return reg.TryGet(CurrentKind(), out var info) ? info.Cost : 0;
     }
 
-    private void UpdateGhost(int2 cell)
+    private void UpdateGhost(int2 cursorCell)
     {
         var grid = _gridQuery.GetSingleton<GridConfigSingleton>();
         var occupancy = _occupancyQuery.GetSingleton<GridOccupancySingleton>();
         var res = _resourceQuery.GetSingleton<ResourceSingleton>();
+        var reg = _registryQuery.GetSingleton<BuildableRegistrySingleton>();
 
-        Vector3 snap = GridUtility.CellToWorld(cell, grid.Origin, grid.CellSize);
-        _ghostInstance.transform.position = snap;
+        if (!reg.TryGet(CurrentKind(), out var info)) return;
+
+        int2 anchor = new int2(
+        cursorCell.x - info.Size.x / 2,
+        cursorCell.y - info.Size.y / 2);
+
+        Vector3 ghostPos = GridUtility.FootprintCenterWorld(
+            anchor, info.Size, grid.Origin, grid.CellSize);
+        _ghostInstance.transform.position = ghostPos;
         if (!_ghostInstance.activeSelf) _ghostInstance.SetActive(true);
 
-        bool canPlace = !occupancy.Map.ContainsKey(cell) && res.Gold >= GetCurrentCost();
+        bool canPlace =
+            GridUtility.AreAllCellsFree(anchor, info.Size, grid.GridSize, occupancy.Map)
+            && res.Gold >= info.Cost;
 
         if (_ghostRenderer != null)
             _ghostRenderer.sharedMaterial = canPlace ? ghostValidMat : ghostInvalidMat;
     }
 
-    private void EnqueueBuild(int2 cell)
+    private void EnqueueBuild(int2 cursorCell)
     {
+        var reg = _registryQuery.GetSingleton<BuildableRegistrySingleton>();
+        if (!reg.TryGet(CurrentKind(), out var info)) return;
+
+        int2 anchor = new int2(
+            cursorCell.x - info.Size.x / 2,
+            cursorCell.y - info.Size.y / 2);
+
         var queue = _queueQuery.GetSingleton<SpawnBuildQueueSingleton>().Queue;
-        queue.Enqueue(new BuildCommand { Cell = cell, Kind = CurrentKind() });
+        queue.Enqueue(new BuildCommand { Cell = anchor, Kind = CurrentKind() });
     }
 }

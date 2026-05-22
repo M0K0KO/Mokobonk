@@ -37,9 +37,9 @@ MonoBehaviour:
     Type: 0
     Prefab: {fileID: 1405116446760944943, guid: 3a0e4a235f764b14b98675c5a32066c0, type: 3}
     PrewarmCount: 10
-    Lifetime: 0.3
+    Lifetime: 0.5
   - Id: 6
     Type: 0
     Prefab: {fileID: 2930374520652304124, guid: b59f3cac0e27d4c4ea3b8570e775451e, type: 3}
     PrewarmCount: 16
-    Lifetime: 0.3
+    Lifetime: 1

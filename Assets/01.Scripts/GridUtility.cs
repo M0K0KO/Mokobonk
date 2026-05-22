@@ -1,3 +1,5 @@
+using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -25,5 +27,27 @@ public static class GridUtility
     {
         return cell.x >= 0 && cell.x < gridSize.x
             && cell.y >= 0 && cell.y < gridSize.y;
+    }
+
+    public static bool AreAllCellsFree(
+    int2 anchor, int2 size, int2 gridSize, NativeHashMap<int2, Entity> occupancy)
+    {
+        for (int dy = 0; dy < size.y; dy++)
+            for (int dx = 0; dx < size.x; dx++)
+            {
+                int2 cell = new int2(anchor.x + dx, anchor.y + dy);
+                if (!IsInBounds(cell, gridSize)) return false;
+                if (occupancy.ContainsKey(cell)) return false;
+            }
+        return true;
+    }
+
+    public static float3 FootprintCenterWorld(
+        int2 anchor, int2 size, float3 origin, float cellSize)
+    {
+        return origin + new float3(
+            (anchor.x + size.x * 0.5f) * cellSize,
+            0f,
+            (anchor.y + size.y * 0.5f) * cellSize);
     }
 }

@@ -1,6 +1,7 @@
 using Unity.Entities;
 using Unity.Physics;
 using UnityEngine;
+using Unity.Mathematics;
 
 public class WallAuthoring : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class WallAuthoring : MonoBehaviour
         {
             var entity = GetEntity(TransformUsageFlags.Dynamic);
             AddComponent<WallTag>(entity);
+            AddComponent(entity, new BuildableFootprint { Anchor = int2.zero });
 
 
             var collider = Unity.Physics.BoxCollider.Create(

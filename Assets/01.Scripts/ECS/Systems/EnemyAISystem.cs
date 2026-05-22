@@ -62,6 +62,7 @@ partial struct EnemyMovementSystem : ISystem
 
 
 [BurstCompile]
+[WithDisabled(typeof(AttackingTag))]
 [WithNone(typeof(DyingTag))]
 public partial struct ChaseCoreJob : IJobEntity
 {

@@ -37,6 +37,7 @@ public partial struct BuildableRegistryInitSystem : ISystem
                 Cost = e.Cost,
                 BlocksMovement = e.BlocksMovement,
                 MaxHealth = e.MaxHealth,
+                Size = e.Size
             });
         }
         entries.Dispose();

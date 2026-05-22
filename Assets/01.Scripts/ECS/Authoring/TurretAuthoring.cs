@@ -21,6 +21,7 @@ public class TurretAuthoring : MonoBehaviour
             var entity = GetEntity(TransformUsageFlags.Dynamic);
 
             AddComponent<TurretTag>(entity);
+            AddComponent(entity, new BuildableFootprint { Anchor = int2.zero });
             AddComponent(entity, new TurretStats
             {
                 Range = authoring.Range,

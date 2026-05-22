@@ -702,16 +702,25 @@ MonoBehaviour:
     Cost: 1000
     BlocksMovement: 1
     MaxHealth: 50
+    Size:
+      x: 1
+      y: 1
   - Kind: 1
     Prefab: {fileID: 5042712361935188230, guid: 2237aa0c140108a4ab0584b969342fdc, type: 3}
     Cost: 4000
     BlocksMovement: 1
     MaxHealth: 500
+    Size:
+      x: 1
+      y: 1
   - Kind: 2
     Prefab: {fileID: 5042712361935188230, guid: 84bf50a809a77a5429e70b1e80ba8f19, type: 3}
     Cost: 6000
     BlocksMovement: 1
     MaxHealth: 500
+    Size:
+      x: 2
+      y: 2
 --- !u!1001 &813866323
 PrefabInstance:
   m_ObjectHideFlags: 0

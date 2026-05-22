@@ -107,7 +107,7 @@ MonoBehaviour:
   contactDamage: 5
   attackDamage: 5
   attackInterval: 1
-  attackRange: 2
+  attackRange: 1.5
   capsuleRadius: 0.25
   capsuleHeight: 1
 --- !u!114 &2668133026946672088

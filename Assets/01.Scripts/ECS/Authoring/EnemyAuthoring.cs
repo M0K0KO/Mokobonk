@@ -72,7 +72,10 @@ public class EnemyAuthoring : MonoBehaviour
             AddComponent(entity, new PhysicsVelocity());
             AddComponent(entity, new ContactDamage { Value = authoring.contactDamage });
 
+            AddComponent<AttackingTag>(entity);
+            SetComponentEnabled<AttackingTag>(entity, false);
 
+            AddComponent(entity, new EnemyAttackTarget { Value = Entity.Null });
         }
     }
 }
